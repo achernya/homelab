@@ -1,0 +1,6 @@
+- hosts: parallax
+  roles:
+    - ansible-venv
+    - kubernetes-cluster
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

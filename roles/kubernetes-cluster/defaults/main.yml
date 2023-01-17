@@ -1,0 +1,20 @@
+# Hostname for accessing the Proxmox API. Defaults to localhost.
+proxmox_api_host: "127.0.0.1"
+
+# User for which the API token and secret apply. By default assumed to
+# be root, provided by the local PAM instance.
+proxmox_api_user: "root@pam"
+
+# Path where images can be stored. Defaults to the local storage of
+# the node, but could be a path such as `/mnt/pve/cephfs/template/iso`
+# if distributed storage is enabled.
+proxmox_iso_storage: "/var/lib/vz/template/iso"
+
+# Storage type where disk volumes are stored. Defaults to the local
+# ZFS pool, but could be `cluster-ceph` if distributed storage is
+# enabled.
+proxmox_volume_storage: "local-zfs"
+
+# API tokens for Proxmox
+proxmox_api_token_id: "{{ undef(hint='You must specify a Proxmox API Token ID') }}"
+proxmox_api_token_secret: "{{ undef(hint='You must specify a Proxmox API TOken secret') }}"
