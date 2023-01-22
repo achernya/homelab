@@ -1,7 +1,7 @@
 - name: Download Debian Cloud image
   ansible.builtin.get_url:
     url: https://cloud.debian.org/images/cloud/bullseye/20221219-1234/debian-11-genericcloud-amd64-20221219-1234.qcow2
-    dest: "{{ proxmox_iso_storage }}/debian-11-genericcloud-amd64.qcow2"
+    dest: "{{ proxmox_storage_path }}/template/iso/debian-11-genericcloud-amd64.qcow2"
     mode: "0644"
     # This is paranoia since we"re downloading over HTTPS, but also
     # means that the download is not attempted if the file matches
@@ -40,7 +40,7 @@
     cmd: "{{ item }}"
   with_items:
     # Import the disk from the QCOW2 image to the underlying storage as a raw disk image
-    - "qm importdisk 1000 {{ proxmox_iso_storage }}/debian-11-genericcloud-amd64.qcow2 {{ proxmox_volume_storage }}"
+    - "qm importdisk 1000 {{ proxmox_storage_path }}/template/iso/debian-11-genericcloud-amd64.qcow2 {{ proxmox_volume_storage }}"
     # Activate the disk, attaching it to the SCSI bus and making it a boot target
     - "qm set 1000 --scsi0 {{ proxmox_volume_storage }}:vm-1000-disk-0 --bootdisk scsi0"
   when: vm_config.stdout.find("scsi0") == -1
@@ -82,3 +82,58 @@
   ansible.builtin.command:
     cmd: qm template 1000
   when: vm_config.stdout.find("template:") == -1
+
+- name: Create kubemaster from base VM
+  community.general.proxmox_kvm:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    proxmox_default_behavior: "no_defaults"
+    name: kubemaster
+    clone: debian-11-template
+    format: "unspecified"
+    full: true
+    newid: 1001
+    node: parallax-1
+    target: parallax-1
+
+- name: Render cloud-init config for kubemaster
+  vars:
+    ansible_playbook: "cluster-bootstrap"
+  ansible.builtin.template:
+    dest: "{{ proxmox_storage_path }}/snippets/kubemaster-ci.yml"
+    src: cloud-init.yml.j2
+
+- name: Check configuration of kubemaster VM
+  ansible.builtin.command:
+    cmd: qm config 1001
+  register: vm_config_kubemaster
+  # This command is read-only
+  changed_when: false
+
+- name: Attach cloud-init script to kubemaster
+  ansible.builtin.command:
+    cmd: "qm set 1001 --cicustom vendor={{ proxmox_storage_id }}:snippets/kubemaster-ci.yml"
+  when: vm_config_kubemaster.stdout.find("cicustom:") == -1
+
+- name: Check status of kubemaster VM
+  ansible.builtin.command:
+    cmd: qm status 1001
+  register: vm_status_kubemaster
+  # This command is read-only
+  changed_when: false
+
+# For reasons I do not understand, the initial access to the
+# cloud-init generated ISO results in a kernel panic. Start the VM,
+# sleep 10 seconds (which is empirically sufficient), stop it, and
+# then start it again the first time to trigger the installation.
+- name: Start kubemaster VM
+  ansible.builtin.command:
+    cmd: "{{ item }}"
+  with_items:
+    - "qm start 1001"
+    - "sleep 10"
+    - "qm stop 1001"
+    - "qm start 1001"
+  when: vm_status_kubemaster.stdout.find("running") == -1

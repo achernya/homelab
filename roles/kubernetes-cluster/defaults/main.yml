@@ -5,10 +5,11 @@ proxmox_api_host: "127.0.0.1"
 # be root, provided by the local PAM instance.
 proxmox_api_user: "root@pam"
 
-# Path where images can be stored. Defaults to the local storage of
-# the node, but could be a path such as `/mnt/pve/cephfs/template/iso`
-# if distributed storage is enabled.
-proxmox_iso_storage: "/var/lib/vz/template/iso"
+# Path where data such as images can be stored. Defaults to the local
+# storage of the node, but could be a path such as
+# `/mnt/pve/cephfs` if distributed storage is enabled.
+proxmox_storage_id: "local"
+proxmox_storage_path: "/var/lib/vz"
 
 # Storage type where disk volumes are stored. Defaults to the local
 # ZFS pool, but could be `cluster-ceph` if distributed storage is
@@ -18,3 +19,7 @@ proxmox_volume_storage: "local-zfs"
 # API tokens for Proxmox
 proxmox_api_token_id: "{{ undef(hint='You must specify a Proxmox API Token ID') }}"
 proxmox_api_token_secret: "{{ undef(hint='You must specify a Proxmox API TOken secret') }}"
+
+# If set, github_username and github_pat will be used as part of the
+# generated ansible-pull command
+github_url: "{{undef(hint='You must specify a github URL for cloning') }}"

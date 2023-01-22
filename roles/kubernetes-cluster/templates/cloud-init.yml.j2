@@ -1,0 +1,18 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+# TODO(achernya): Replace this with proper ssh keys.
+user: root
+password: temp123
+
+# Install ansible to run ansible-pull to customize this VM.
+packages:
+  - ansible
+  - git
+
+# cloud-init 22.3 and newer support the cc_ansible module. Debian
+# bullseye has 20.x So resort to runcmd, the old-fashioned way, using
+# runcmd directly
+runcmd:
+  - [ ansible-pull, -U, https://{{ "{}:{}@".format(github_username, github_pat) if github_pat }}{{ github_url }}, {{ ansible_playbook }}.yml ]
