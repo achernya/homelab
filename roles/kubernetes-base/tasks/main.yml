@@ -1,0 +1,111 @@
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/ Step 1
+- name: Install apt https support
+  ansible.builtin.apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/ Step 2, 3
+- name: Add Kubernetes key and repository
+  block:
+    - name: Ensure /etc/apt/keyrings exists
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/
+        state: directory
+        mode: '0755'
+
+    - name: Download kubernetes-archive-keyring
+      ansible.builtin.get_url:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+
+    - name: Configure kubernetes repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+        filename: kubernetes
+        state: present
+      notify: update apt
+
+- name: Update apt if needed
+  ansible.builtin.meta: flush_handlers
+      
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/ Step 4
+- name: Update repositories cache and install kubernetes packages
+  block:
+    - name: Update repositories cache and install kubernetes packages
+      ansible.builtin.apt:
+        pkg:
+          - kubelet
+          - kubeadm
+          - kubectl
+          - cri-tools
+          - containerd
+    # Prevent unattended (or attended) upgrades from upgrading k8s packages
+    - name: Mark kubernetes packages for hold
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      with_items:
+        - kubelet
+        - kubeadm
+        - kubectl
+        - cri-tools
+        - containerd
+    
+# Replace debian containerd with "official" release. Debian containerd in bullseye is too old
+- name: Install newer containerd than available in Debian
+  block:
+    - name: Download newer containerd
+      ansible.builtin.get_url:
+        url: https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-amd64.tar.gz
+        checksum: "sha256:2415b431a900275c14942f87f751e1e13d513c1c2f062322b5ca5a9a2190f22a"
+        dest: "/root/containerd-linux-amd64.tar.gz"
+    - name: Extract cilium
+      ansible.builtin.unarchive:
+        src: "/root/containerd-linux-amd64.tar.gz"
+        dest: /usr/
+
+# Configure containerd
+- name: Configure containerd
+  block:
+    - name: Install containerd/config.toml
+      ansible.builtin.copy:
+        src: containerd-config.toml
+        dest: /etc/containerd/config.toml
+      notify: restart containerd
+    - name: Install crictl.yaml
+      ansible.builtin.copy:
+        src: crictl.yaml
+        dest: /etc/crictl.yaml
+  
+# Configure networking modules
+- name: Configure networking modules
+  block:
+    - name: Automatically load modules
+      ansible.builtin.copy:
+        src: modules.conf
+        dest: /etc/modules-load.d/k8s.conf
+      notify: reload modules
+    - name: Configure sysctl
+      ansible.builtin.copy:
+        src: sysctl.conf
+        dest: /etc/sysctl.d/k8s.conf
+      notify: reload sysctl
+
+# Install cilium
+- name: Install cilium
+  block:
+    - name: Download cilium
+      ansible.builtin.get_url:
+        url: https://github.com/cilium/cilium-cli/releases/download/v0.12.12/cilium-linux-amd64.tar.gz
+        checksum: "sha256:b72e8666b7fdb92b51c72ccf7cd9a4f8dfc8740472085a4c0e85406d1cf3b6e6"
+        dest: "/root/cilium-linux-amd64.tar.gz"
+    - name: Extract cilium
+      ansible.builtin.unarchive:
+        src: "/root/cilium-linux-amd64.tar.gz"
+        dest: /usr/local/bin
+    # - name: Install cilium
+    #   ansible.builtin.command:
+    #     cmd: cilium install
+

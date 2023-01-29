@@ -1,17 +1,23 @@
 all:
   hosts:
-    192.168.1.206:
+    parallax-1:
       ansible_connection: ssh
       ansible_user: root
+      ansible_host: 192.168.1.206
+    kubemaster-1:
+      ansible_connection: local
+    worker-01:
+      ansible_connection: local
   children:
     parallax:
       hosts:
-        192.168.1.206
-# all:
-#   hosts:
-#     localhost:
-#       ansible_connection: local
-#   children:
-#     parallax:
-#       hosts:
-#         localhost
+        parallax-1:
+    kubemaster:
+      hosts:
+        kubemaster-1:
+    worker:
+      hosts:
+        worker-01:
+        worker-02:
+        worker-03:
+        worker-04:

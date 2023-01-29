@@ -1,0 +1,13 @@
+- name: restart containerd
+  service: name=containerd state=restarted
+
+- name: reload modules
+  service: name=systemd-modules-load state=restarted
+
+- name: reload sysctl
+  ansible.builtin.command:
+    cmd: sysctl --system
+
+- name: update apt
+  ansible.builtin.apt:
+    update_cache: yes
