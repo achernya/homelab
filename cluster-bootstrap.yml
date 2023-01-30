@@ -1,9 +1,9 @@
-- hosts: kubemaster
+- hosts: kubemasters
   roles:
     - kubernetes-base
   vars:
     ansible_python_interpreter: /usr/bin/python3
-- hosts: worker
+- hosts: kubelets
   roles:
     - kubernetes-base
   vars:

@@ -1,0 +1,19 @@
+vm_hosts:
+  parallax-1:
+    ansible_connection: ssh
+    ansible_user: root
+    ansible_host: 192.168.1.206
+  parallax-2:
+    ansible_connection: ssh
+    ansible_user: root
+    ansible_host: 192.168.1.100
+  parallax-3:
+    ansible_connection: ssh
+    ansible_user: root
+    ansible_host: 192.168.1.205
+  parallax-4:
+    ansible_connection: ssh
+    ansible_user: root
+    ansible_host: 192.168.1.101
+kubemasters: 4
+kubelets: 8

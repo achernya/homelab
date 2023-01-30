@@ -1,6 +1,7 @@
 - hosts: hypervisors
+  strategy: free
   roles:
     - ansible-venv
-    - vm-template-debian
+    - kubernetes-cluster
   vars:
     ansible_python_interpreter: /usr/bin/python3
