@@ -1,10 +1,12 @@
 - hosts: kubemasters
   roles:
+    - vm-base
     - kubernetes-base
   vars:
     ansible_python_interpreter: /usr/bin/python3
 - hosts: kubelets
   roles:
+    - vm-base
     - kubernetes-base
   vars:
     ansible_python_interpreter: /usr/bin/python3
