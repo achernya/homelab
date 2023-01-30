@@ -1,0 +1,60 @@
+# Import proxmox API variables from the common role
+- name: "{{ target_vm_name }} | import config variables"
+  ansible.builtin.include_role:
+    name: proxmox-api
+    public: true
+
+- name: "{{ target_vm_name }} | clone from base VM"
+  community.general.proxmox_kvm:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    proxmox_default_behavior: "no_defaults"
+    name: "{{ target_vm_name }}"
+    clone: "{{ template_vm_name }}"
+    format: "unspecified"
+    full: true
+    newid: "{{ target_vm_id }}"
+    node: "{{ template_vm_host }}"
+    target: "{{ target_vm_host }}"
+
+- name: "{{ target_vm_name }} | render cloud-init config"
+  vars:
+    ansible_playbook: "cluster-bootstrap"
+  ansible.builtin.template:
+    dest: "{{ proxmox_storage_path }}/snippets/{{ target_vm_id }}-cloudinit.yml"
+    src: cloud-init.yml.j2
+
+- name: "{{ target_vm_name }} | check configuration of VM"
+  ansible.builtin.command:
+    cmd: "qm config {{ target_vm_id }}"
+  register: vm_config
+  # This command is read-only
+  changed_when: false
+
+- name: "{{ target_vm_name }} | attach cloud-init script"
+  ansible.builtin.command:
+    cmd: "qm set {{ target_vm_id }} --cicustom vendor={{ proxmox_storage_id }}:snippets/{{ target_vm_id }}-cloudinit.yml"
+  when: vm_config.stdout.find("cicustom:") == -1
+
+- name: "{{ target_vm_name }} | check status of VM"
+  ansible.builtin.command:
+    cmd: "qm status {{ target_vm_id }}"
+  register: vm_status
+  # This command is read-only
+  changed_when: false
+
+# For reasons I do not understand, the initial access to the
+# cloud-init generated ISO results in a kernel panic. Start the VM,
+# sleep 10 seconds (which is empirically sufficient), stop it, and
+# then start it again the first time to trigger the installation.
+- name: "{{ target_vm_name }} | start VM"
+  ansible.builtin.command:
+    cmd: "{{ item }}"
+  with_items:
+    - "qm start {{ target_vm_id }}"
+    - "sleep 10"
+    - "qm stop {{ target_vm_id }}"
+    - "qm start {{ target_vm_id }}"
+  when: vm_status.stdout.find("running") == -1

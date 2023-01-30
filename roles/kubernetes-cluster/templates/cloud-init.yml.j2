@@ -15,4 +15,4 @@ packages:
 # bullseye has 20.x So resort to runcmd, the old-fashioned way, using
 # runcmd directly
 runcmd:
-  - [ ansible-pull, -U, https://{{ "{}:{}@".format(github_username, github_pat) if github_pat }}{{ github_url }}, {{ ansible_playbook }}.yml ]
+  - [ ansible-pull, -U, https://{{ "{}:{}@".format(github_username, github_pat) if github_pat }}{{ github_url }}, -i, inventory, {{ ansible_playbook }}.yml ]
