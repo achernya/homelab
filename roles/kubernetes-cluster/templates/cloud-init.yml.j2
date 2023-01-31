@@ -2,9 +2,12 @@
 package_update: true
 package_upgrade: true
 
-# TODO(achernya): Replace this with proper ssh keys.
 user: root
-password: temp123
+ssh_authorized_keys:
+  - {{ root_authorized_key }}
+# No, really, cloud-init, we *do* want ssh as root. We don't believe
+# in sudo for automation here.
+disable_root: false
 
 # Install ansible to run ansible-pull to customize this VM.
 packages:
