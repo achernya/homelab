@@ -18,8 +18,6 @@
     newid: "{{ target_vm_id }}"
     node: "{{ template_vm_host }}"
     target: "{{ target_vm_host }}"
-    ipconfig:
-      ipconfig0: 'ip={{ target_vm_ip }}'
 
 - name: "{{ target_vm_name }} | render cloud-init config"
   vars:
@@ -39,6 +37,11 @@
   ansible.builtin.command:
     cmd: "qm set {{ target_vm_id }} --cicustom vendor={{ proxmox_storage_id }}:snippets/{{ target_vm_id }}-cloudinit.yml"
   when: vm_config.stdout.find("cicustom:") == -1
+
+- name: "{{ target_vm_name }} | configure IP"
+  ansible.builtin.command:
+    cmd: "qm set {{ target_vm_id }} --ipconfig0 ip={{ target_vm_ip }}"
+  when: vm_config.stdout.find("ipconfig0:") == -1
 
 - name: "{{ target_vm_name }} | check status of VM"
   ansible.builtin.command:
