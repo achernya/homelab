@@ -9,6 +9,7 @@
 #   $ ./inventory.py --list | jq
 
 import argparse
+import ipaddress
 import itertools
 import json
 import yaml
@@ -31,24 +32,30 @@ def all_kubelets(config):
 
 def vmvars(config):
     vms = []
+
+    subnet = ipaddress.ip_network(config['vm_subnet'])
     
     base_vm_id = 1011
+    base_network_addr = subnet.network_address + 11
     hypervisors = sorted(all_hypervisors(config))
     
     kubemasters = sorted(all_kubemasters(config))
     for vm, host in zip(kubemasters, itertools.cycle(hypervisors)):
-        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id})
+        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
         base_vm_id += 1
+        base_network_addr += 1
 
     base_vm_id = 1031
+    base_network_addr = subnet.network_address + 31
     kubelets = sorted(all_kubelets(config))
     for vm, host in zip(kubelets, itertools.cycle(hypervisors)):
-        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id})
+        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
         base_vm_id += 1
+        base_network_addr += 1
 
     return vms
 
-def hostvars(config, hosts=None):
+def hostvars(args, config, hosts=None):
     hypervisors = all_hypervisors(config)
     # If `hosts` is None, then we need to generate all the
     # hostnames. This is the result of concatenating the names of all
@@ -61,6 +68,9 @@ def hostvars(config, hosts=None):
     vms_by_host = defaultdict(list)
     for vm in vms:
         vms_by_host[vm['host']].append(vm)
+    vms_by_name = {}
+    for vm in vms:
+        vms_by_name[vm['name']] = vm
 
     for host in hosts:
         if host in hypervisors:
@@ -69,14 +79,20 @@ def hostvars(config, hosts=None):
             # And also any vars about the VMs they run
             result[host].update({'all_vms': vms_by_host[host]})
             continue
-        # But all other hosts will be managed via ansible-pull, so they get a local connection
-        result[host] = {'ansible_connection': 'local'}
+        # But all other hosts will be managed via ansible-pull if
+        # --local is passed in
+        if args.local:
+            result[host] = {'ansible_connection': 'local'}
+        else:
+            result[host] = {'ansible_connection': 'ssh',
+                            'ansible_user': 'root',
+                            'ansible_host': vms_by_name[host]['ip']}
         
     return result
 
-def listall(config):
+def listall(args, config):
     result = defaultdict(dict)
-    result['_meta'] = {'hostvars': hostvars(config)}
+    result['_meta'] = {'hostvars': hostvars(args, config)}
     result['kubemasters'] = {'hosts': list(all_kubemasters(config))}
     result['kubelets'] = {'hosts': list(all_kubelets(config))}
     result['hypervisors'] = {'hosts': list(all_hypervisors(config))}
@@ -107,6 +123,8 @@ def main():
         'inventory',
         description='Generate ansible inventory for k8s cluster')
     parser.add_argument('--config', default='cluster_config.yaml')
+    parser.add_argument('--local', action='store_true',
+                        help='If set, generate ansible_connection: local for VMs')
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--list', action='store_true')
     mode.add_argument('--host')
@@ -118,9 +136,9 @@ def main():
 
     result = {}
     if args.host:
-        result = hostvars(config, hosts=[args.host])[args.host]
+        result = hostvars(args, config, hosts=[args.host])[args.host]
     if args.list:
-        result = listall(config)
+        result = listall(args, config)
     print(json.dumps(sort_dict(result)))
 
 if __name__ == '__main__':

@@ -17,6 +17,7 @@
   with_items: "{{ all_vms }}"
   loop_control:
     loop_var: vm
+  failed_when: false
 
 - name: "Destroy all VMs"
   community.general.proxmox_kvm:
