@@ -32,6 +32,8 @@
       net0: "virtio,bridge=vmbr0"
     ostype: "l26"
     scsihw: "virtio-scsi-pci"
+    serial:
+      serial0: "socket"
 
 - name: Check configuration of base VM
   ansible.builtin.command:
