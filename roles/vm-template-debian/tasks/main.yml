@@ -28,6 +28,7 @@
     sockets: 1
     cores: 12
     cpu: "Broadwell-noTSX-IBRS"
+    machine: "q35"
     net:
       net0: "virtio,bridge=vmbr0"
     ostype: "l26"
