@@ -13,3 +13,8 @@
   ansible.builtin.systemd:
     name: qemu-guest-agent
     state: started
+
+- name: Remove cloud-init auto-generated network configuration
+  ansible.builtin.shell:
+    cmd: rm -f /run/network/interfaces.d/*
+  notify: restart networking

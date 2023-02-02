@@ -40,7 +40,7 @@
 
 - name: "{{ target_vm_name }} | configure IP"
   ansible.builtin.command:
-    cmd: "qm set {{ target_vm_id }} --ipconfig0 ip={{ target_vm_ip }}"
+    cmd: "qm set {{ target_vm_id }} --ipconfig0 gw={{ target_vm_ip | ipaddr('network/prefix') | ipaddr('1') | ipaddr('address') }},ip={{ target_vm_ip }}"
   when: vm_config.stdout.find("ipconfig0:") == -1
 
 - name: "{{ target_vm_name }} | check status of VM"
