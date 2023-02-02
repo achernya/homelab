@@ -11,6 +11,7 @@
     # This is paranoia since we"re downloading over HTTPS, but also
     # means that the download is not attempted if the file matches
     checksum: "sha256:ba0237232247948abf7341a495dec009702809aa7782355a1b35c112e75cee81"
+  when: inventory_hostname == play_hosts[0]
 
 - name: Create debian-template base VM
   community.general.proxmox_kvm:
@@ -35,6 +36,7 @@
     scsihw: "virtio-scsi-pci"
     serial:
       serial0: "socket"
+  when: inventory_hostname == play_hosts[0]
 
 - name: Check configuration of base VM
   ansible.builtin.command:
@@ -42,6 +44,7 @@
   register: vm_config
   # This command is read-only
   changed_when: false
+  when: inventory_hostname == play_hosts[0]
 
 - name: Import Debian Cloud image as root disk to base VM
   ansible.builtin.command:
@@ -51,14 +54,18 @@
     - "qm importdisk 1000 {{ proxmox_storage_path }}/template/iso/debian-11-genericcloud-amd64.qcow2 {{ proxmox_volume_storage }}"
     # Activate the disk, attaching it to the SCSI bus and making it a boot target
     - "qm set 1000 --scsi0 {{ proxmox_volume_storage }}:vm-1000-disk-0 --bootdisk scsi0"
-  when: vm_config.stdout.find("scsi0") == -1
+  when:
+    - inventory_hostname == play_hosts[0]
+    - vm_config.stdout.find("scsi0") == -1
 
 - name: Attach CloudInit disk to base VM
   ansible.builtin.command:
     cmd: "{{ item }}"
   with_items:
     - "qm set 1000 --scsi1 {{ proxmox_volume_storage }}:cloudinit"
-  when: vm_config.stdout.find("scsi1") == -1
+  when:
+    - inventory_hostname == play_hosts[0]
+    - vm_config.stdout.find("scsi1") == -1
 
 - name: Configure disk on base VM
   community.general.proxmox_disk:
@@ -71,6 +78,9 @@
     disk: "scsi0"
     ssd: true
     vmid: 1000
+  when:
+    - inventory_hostname == play_hosts[0]
+    - vm_config.stdout.find("scsi0") == -1
 
 - name: Resize disk on base VM
   community.general.proxmox_disk:
@@ -82,11 +92,15 @@
     disk: "scsi0"
     size: "{{ 40 * 1024 * 1024 * 1024 }}" # in bytes, despite documentation saying GiB
     state: "resized"
-  when: vm_config.stdout.find("template:") == -1
+  when:
+    - inventory_hostname == play_hosts[0]
+    - vm_config.stdout.find("template:") == -1
 
 # Merely setting `template: 1` in the configuration prevents linked
 # clones from working. So use the conversion command explicitly.
 - name: Convert base VM to template
   ansible.builtin.command:
     cmd: qm template 1000
-  when: vm_config.stdout.find("template:") == -1
+  when:
+    - inventory_hostname == play_hosts[0]
+    - vm_config.stdout.find("template:") == -1
