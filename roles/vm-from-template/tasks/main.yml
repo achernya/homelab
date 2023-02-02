@@ -26,40 +26,27 @@
     dest: "{{ proxmox_storage_path }}/snippets/{{ target_vm_id }}-cloudinit.yml"
     src: cloud-init.yml.j2
 
-- name: "{{ target_vm_name }} | check configuration of VM"
-  ansible.builtin.command:
-    cmd: "qm config {{ target_vm_id }}"
-  register: vm_config
-  # This command is read-only
-  changed_when: false
+- name: "{{ target_vm_name }} | update VM config for cloud-init"
+  community.general.proxmox_kvm:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    proxmox_default_behavior: "no_defaults"
+    vmid: "{{ target_vm_id }}"
+    node: "{{ target_vm_host }}"
+    update: true
+    cicustom: "vendor={{ proxmox_storage_id }}:snippets/{{ target_vm_id }}-cloudinit.yml"
+    ipconfig:
+      ipconfig0: "gw={{ target_vm_ip | ipaddr('network/prefix') | ipaddr('1') | ipaddr('address') }},ip={{ target_vm_ip }}"
 
-- name: "{{ target_vm_name }} | attach cloud-init script"
-  ansible.builtin.command:
-    cmd: "qm set {{ target_vm_id }} --cicustom vendor={{ proxmox_storage_id }}:snippets/{{ target_vm_id }}-cloudinit.yml"
-  when: vm_config.stdout.find("cicustom:") == -1
-
-- name: "{{ target_vm_name }} | configure IP"
-  ansible.builtin.command:
-    cmd: "qm set {{ target_vm_id }} --ipconfig0 gw={{ target_vm_ip | ipaddr('network/prefix') | ipaddr('1') | ipaddr('address') }},ip={{ target_vm_ip }}"
-  when: vm_config.stdout.find("ipconfig0:") == -1
-
-- name: "{{ target_vm_name }} | check status of VM"
-  ansible.builtin.command:
-    cmd: "qm status {{ target_vm_id }}"
-  register: vm_status
-  # This command is read-only
-  changed_when: false
-
-# For reasons I do not understand, the initial access to the
-# cloud-init generated ISO results in a kernel panic. Start the VM,
-# sleep 10 seconds (which is empirically sufficient), stop it, and
-# then start it again the first time to trigger the installation.
 - name: "{{ target_vm_name }} | start VM"
-  ansible.builtin.command:
-    cmd: "{{ item }}"
-  with_items:
-    - "qm start {{ target_vm_id }}"
-    - "sleep 10"
-    - "qm stop {{ target_vm_id }}"
-    - "qm start {{ target_vm_id }}"
-  when: vm_status.stdout.find("running") == -1
+  community.general.proxmox_kvm:
+    api_host: "{{ proxmox_api_host }}"
+    api_user: "{{ proxmox_api_user }}"
+    api_token_id: "{{ proxmox_api_token_id }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    proxmox_default_behavior: "no_defaults"
+    vmid: "{{ target_vm_id }}"
+    node: "{{ target_vm_host }}"
+    state: started

@@ -5,12 +5,12 @@
 
 - name: Download Debian Cloud image
   ansible.builtin.get_url:
-    url: https://cloud.debian.org/images/cloud/bullseye/20221219-1234/debian-11-genericcloud-amd64-20221219-1234.qcow2
+    url: https://cloud.debian.org/images/cloud/bullseye/20230124-1270/debian-11-genericcloud-amd64-20230124-1270.qcow2
     dest: "{{ proxmox_storage_path }}/template/iso/debian-11-genericcloud-amd64.qcow2"
     mode: "0644"
     # This is paranoia since we"re downloading over HTTPS, but also
     # means that the download is not attempted if the file matches
-    checksum: "sha256:ba0237232247948abf7341a495dec009702809aa7782355a1b35c112e75cee81"
+    checksum: "sha256:14caeec68ba3129a115a9b57396d08dc0973cc9f569ce049232d7d15d768ad41"
   when: inventory_hostname == play_hosts[0]
 
 - name: Create debian-template base VM
