@@ -3,7 +3,7 @@ version = 2
 [plugins]
   [plugins."io.containerd.grpc.v1.cri"]
     [plugins."io.containerd.grpc.v1.cri".cni]
-      bin_dir = "/usr/lib/cni"
+      bin_dir = "/opt/cni/bin"
       conf_dir = "/etc/cni/net.d"
     [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
       runtime_type = "io.containerd.runc.v2"
