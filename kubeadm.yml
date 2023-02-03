@@ -1,0 +1,10 @@
+- hosts: kubemasters
+  roles:
+    - kubeadm-init
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+- hosts: kubemaster-01 kubelets
+  roles:
+    - kubeadm-join-kubelet
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

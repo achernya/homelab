@@ -1,0 +1,9 @@
+- name: Get k8s join command
+  block:
+    - ansible.builtin.shell: kubeadm token create --print-join-command --ttl=5m --description="Created by ansible/kubeadm-get-token"
+      register: join_command_raw
+    - ansible.builtin.set_fact:
+        join_command: "{{ join_command_raw.stdout_lines[0] }}"
+  when:
+    # Only the first kubemaster has the join command
+    - inventory_hostname == play_hosts[0]

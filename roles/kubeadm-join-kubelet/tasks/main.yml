@@ -1,0 +1,17 @@
+- name: Get token
+  ansible.builtin.include_role:
+    name: kubeadm-get-token
+    public: true
+# Uncomment this to force re-join the cluster
+# - name: Delete marker
+#   file:
+#     path: /root/node-joined
+#     state: absent
+- name: Join cluster
+  shell: "{{ hostvars[play_hosts[0]].join_command }} >> node-joined"
+  args:
+    chdir: $HOME
+    creates: node-joined
+  when:
+    # Join all nodes except the first kubemaster
+    - inventory_hostname != play_hosts[0]
