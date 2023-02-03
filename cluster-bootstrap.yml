@@ -10,3 +10,8 @@
     - kubernetes-base
   vars:
     ansible_python_interpreter: /usr/bin/python3
+- hosts: haproxies
+  roles:
+    - vm-base
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

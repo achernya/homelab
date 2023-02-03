@@ -17,4 +17,5 @@ vm_hosts:
     ansible_host: 192.168.1.101
 kubemasters: 4
 kubelets: 8
+haproxies: 2
 vm_subnet: 192.168.3.0/24

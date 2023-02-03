@@ -30,6 +30,9 @@ def all_kubemasters(config):
 def all_kubelets(config):
     return set(['kubelet-{:02d}'.format(x+1) for x in range(config['kubelets'])])
 
+def all_haproxies(config):
+    return set(['haproxy-{:02d}'.format(x+1) for x in range(config['haproxies'])])
+
 def vmvars(config):
     vms = []
 
@@ -41,6 +44,14 @@ def vmvars(config):
     
     kubemasters = sorted(all_kubemasters(config))
     for vm, host in zip(kubemasters, itertools.cycle(hypervisors)):
+        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
+        base_vm_id += 1
+        base_network_addr += 1
+
+    base_vm_id = 1021
+    base_network_addr = subnet.network_address + 21
+    haproxies = sorted(all_haproxies(config))
+    for vm, host in zip(haproxies, itertools.cycle(hypervisors)):
         vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
         base_vm_id += 1
         base_network_addr += 1
@@ -96,6 +107,7 @@ def listall(args, config):
     result['_meta'] = {'hostvars': hostvars(args, config)}
     result['kubemasters'] = {'hosts': list(all_kubemasters(config))}
     result['kubelets'] = {'hosts': list(all_kubelets(config))}
+    result['haproxies'] = {'hosts': list(all_haproxies(config))}
     result['hypervisors'] = {'hosts': list(all_hypervisors(config))}
     result['ungrouped'] = {'hosts': []}
 
