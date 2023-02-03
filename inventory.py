@@ -86,7 +86,8 @@ def hostvars(args, config, hosts=None):
         else:
             result[host] = {'ansible_connection': 'ssh',
                             'ansible_user': 'root',
-                            'ansible_host': vms_by_name[host]['ip']}
+                            'ansible_host': vms_by_name[host]['ip'],
+                            'ansible_ssh_common_args': '-o StrictHostKeyChecking=no'}
         
     return result
 
