@@ -1,5 +1,5 @@
 - name: Initialize k8s cluster
-  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --skip-token-print --skip-phases=bootstrap-token,show-join-command,addon/kube-proxy >> cluster-initialized
+  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --skip-token-print --skip-phases=addon/kube-proxy >> cluster-initialized
   args:
     chdir: $HOME
     creates: cluster-initialized
