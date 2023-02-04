@@ -1,9 +1,24 @@
 - name: Get k8s join command
   block:
-    - ansible.builtin.shell: kubeadm token create --print-join-command --ttl=5m --description="Created by ansible/kubeadm-get-token"
+    - name: Create join token
+      ansible.builtin.shell: kubeadm token create --print-join-command --ttl=5m --description="Created by ansible/kubeadm-get-token"
       register: join_command_raw
-    - ansible.builtin.set_fact:
+    - name: Register join token value for future use
+      ansible.builtin.set_fact:
         join_command: "{{ join_command_raw.stdout_lines[0] }}"
   when:
     # Only the first kubemaster has the join command
     - inventory_hostname == play_hosts[0]
+
+- name: Get k8s certificates
+  block:
+    - name: Upload certs and get certificate key
+      ansible.builtin.shell: kubeadm init phase upload-certs --upload-certs
+      register: certificate_key_raw
+    - name: Register certificate key value for future use
+      ansible.builtin.set_fact:
+        certificate_key: "{{ certificate_key_raw.stdout_lines[-1] }}"
+  when:
+    # Only the first kubemaster has the join command
+    - inventory_hostname == play_hosts[0]
+    - join_masters is defined

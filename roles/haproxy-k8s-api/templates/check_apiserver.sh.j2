@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# haproxy/kubernetes-api healthcheck script for keepalived, inspired
+# by the High Availability Kubernetes documentation at
+# https://github.com/kubernetes/kubeadm/blob/main/docs/ha-considerations.md#keepalived-and-haproxy
+
+APISERVER_DEST_PORT={{ k8s_api_port }}
+APISERVER_VIP={{ k8s_api_vip }}
+
+# curl command line for healthchecking
+CURL="curl --silent --max-time 2 --insecure -o /dev/null"
+
+die() {
+    echo "*** $*" 1>&2
+    exit 1
+}
+
+check() {
+    ${CURL} ${1} || die "Error GET ${1}"
+}
+
+# First, check to see if the target port is directly reachable,
+# regardless of if we're holding the VIP. This uses loopback, and
+# checks that the server instance is healthy.
+check "https://localhost:${APISERVER_DEST_PORT}/"
+
+# Next, check to see if we are holding the VIP, and if so, check the
+# target port on the VIP. This confirms the target server instance is
+# listening on the VIP, not just localhost.
+if ip addr | grep -q ${APISERVER_VIP}; then
+    check "https://${APISERVER_VIP}:${APISERVER_DEST_PORT}/"
+fi

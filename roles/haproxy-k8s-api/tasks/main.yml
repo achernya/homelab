@@ -1,0 +1,65 @@
+- name: Install haproxy
+  ansible.builtin.apt:
+    pkg:
+      - haproxy
+  when: k8s_api_mode == 'dedicated-vm'
+
+- name: Install haproxy tools
+  ansible.builtin.apt:
+    pkg:
+      - hatop
+  when: k8s_api_mode != 'direct'
+
+- name: Install haproxy configs
+  block:
+    - name: Ensure /etc/haproxy exists
+      ansible.builtin.file:
+        path: /etc/haproxy
+        state: directory
+        mode: '0755'
+    - name: Install haproxy config
+      ansible.builtin.template:
+        src: haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
+  when: k8s_api_mode != 'direct'
+
+- name: Install keepalived
+  ansible.builtin.apt:
+    pkg:
+      - keepalived
+  when: k8s_api_mode == 'dedicated-vm'
+
+- name: Install keepalived configs
+  block:
+    - name: Ensure /etc/keepalived exists
+      ansible.builtin.file:
+        path: /etc/keepalived
+        state: directory
+        mode: '0755'
+    - name: Install keepalived config
+      ansible.builtin.template:
+        src: keepalived.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+    - name: Install keepalived check script
+      ansible.builtin.template:
+        src: check_apiserver.sh.j2
+        dest: /etc/keepalived/check_apiserver.sh
+        mode: '755'
+  when: k8s_api_mode != 'direct'
+
+- name: Install pod configuration for haproxy and keepalived
+  block:
+    - name: Ensure /etc/kubernetes/manifests exists
+      ansible.builtin.file:
+        path: /etc/kubernetes/manifests
+        state: directory
+        mode: '0755'
+    - name: Install keepalived manifest
+      ansible.builtin.template:
+        src: keepalived.yaml.j2
+        dest: /etc/kubernetes/manifests/keepalived.yaml
+    - name: Install haproxy mainfest
+      ansible.builtin.template:
+        src: haproxy.yaml.j2
+        dest: /etc/kubernetes/manifests/haproxy.yaml
+  when: k8s_api_mode == 'stacked'

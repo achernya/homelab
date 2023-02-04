@@ -13,5 +13,6 @@
 - hosts: haproxies
   roles:
     - vm-base
+    - haproxy-k8s-api
   vars:
     ansible_python_interpreter: /usr/bin/python3

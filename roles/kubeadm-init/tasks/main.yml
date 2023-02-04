@@ -1,5 +1,9 @@
+- name: Install haproxy if in stacked mode
+  ansible.builtin.include_role:
+    name: haproxy-k8s-api
+
 - name: Initialize k8s cluster
-  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --skip-token-print --skip-phases=addon/kube-proxy >> cluster-initialized
+  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --skip-token-print --skip-phases=addon/kube-proxy {{ '--control-plane-endpoint={}:{}'.format(k8s_api_vip, k8s_api_port) if k8s_api_mode != 'direct' else '' }} >> cluster-initialized
   args:
     chdir: $HOME
     creates: cluster-initialized
@@ -7,18 +11,18 @@
     # Only the first kubemaster actually runs the full init
     - inventory_hostname == play_hosts[0]
 
-# TODO: join the other kubemasters once HAProxy for the API is installed
+- name: Get token
+  ansible.builtin.include_role:
+    name: kubeadm-get-token
+    public: true
+  vars:
+    join_masters: true
 
-# - name: Get token
-#   ansible.builtin.include_role:
-#     name: kubeadm-get-token
-#     public: true
-
-# - name: Join cluster
-#   shell: "{{ hostvars[play_hosts[0]].join_command }} --control-plane >> node-joined"
-#   args:
-#     chdir: $HOME
-#     creates: node-joined
-#   when:
-#     # Join all nodes except the first kubemaster
-#     - inventory_hostname != play_hosts[0]
+- name: Join cluster
+  shell: "{{ hostvars[play_hosts[0]].join_command }} --control-plane --certificate-key {{ hostvars[play_hosts[0]].certificate_key }} >> node-joined"
+  args:
+    chdir: $HOME
+    creates: node-joined
+  when:
+    # Join all nodes except the first kubemaster
+    - inventory_hostname != play_hosts[0]

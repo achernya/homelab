@@ -31,17 +31,39 @@ def all_kubelets(config):
     return set(['kubelet-{:02d}'.format(x+1) for x in range(config['kubelets'])])
 
 def all_haproxies(config):
+    if config['api_mode'] != 'dedicated-vm':
+        return set()
     return set(['haproxy-{:02d}'.format(x+1) for x in range(config['haproxies'])])
+
+def k8s_api_vip(config):
+    subnet = ipaddress.ip_network(config['vm_subnet'])
+    if config['api_mode'] == 'direct':
+        # Return the IP of the first kubemaster
+        return subnet.network_address + 11
+    # stacked or dedicated-vm, use a VIP
+    return subnet.network_address + 20
+
+def k8s_api_port(config):
+    if config['api_mode'] == 'direct':
+        return 6443
+    return 8443
+
+def k8s_api_vars(config):
+    return {
+        'k8s_api_mode': config['api_mode'],
+        'k8s_api_port': k8s_api_port(config),
+        'k8s_api_vip': str(k8s_api_vip(config)),
+    }
 
 def vmvars(config):
     vms = []
 
     subnet = ipaddress.ip_network(config['vm_subnet'])
-    
+
     base_vm_id = 1011
     base_network_addr = subnet.network_address + 11
     hypervisors = sorted(all_hypervisors(config))
-    
+
     kubemasters = sorted(all_kubemasters(config))
     for vm, host in zip(kubemasters, itertools.cycle(hypervisors)):
         vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
@@ -72,8 +94,8 @@ def hostvars(args, config, hosts=None):
     # hostnames. This is the result of concatenating the names of all
     # the VM hosts with the number of kubemasters and kubelets
     if hosts is None:
-        hosts = list(hypervisors) + list(all_kubemasters(config)) + list(all_kubelets(config))
-              
+        hosts = list(hypervisors) + list(all_kubemasters(config)) + list(all_kubelets(config)) + list(all_haproxies(config))
+
     result = defaultdict(dict)
     vms = vmvars(config)
     vms_by_host = defaultdict(list)
@@ -83,6 +105,8 @@ def hostvars(args, config, hosts=None):
     for vm in vms:
         vms_by_name[vm['name']] = vm
 
+    api_vars = k8s_api_vars(config)
+
     for host in hosts:
         if host in hypervisors:
             # Hypervisors directly get their hostvars from the underlying template
@@ -90,16 +114,18 @@ def hostvars(args, config, hosts=None):
             # And also any vars about the VMs they run
             result[host].update({'all_vms': vms_by_host[host]})
             continue
-        # But all other hosts will be managed via ansible-pull if
-        # --local is passed in
+        result[host] = {'ansible_connection': 'ssh',
+                        'ansible_user': 'root',
+                        'ansible_host': vms_by_name[host]['ip'],
+                        'ansible_ssh_common_args': '-o StrictHostKeyChecking=no'}
+        # If we're running under ansible-pull, override
+        # ansible_connection to be local, despite still specifying
+        # ansible_host.
         if args.local:
-            result[host] = {'ansible_connection': 'local'}
-        else:
-            result[host] = {'ansible_connection': 'ssh',
-                            'ansible_user': 'root',
-                            'ansible_host': vms_by_name[host]['ip'],
-                            'ansible_ssh_common_args': '-o StrictHostKeyChecking=no'}
-        
+            result[host].update({'ansible_connection': 'local'})
+        # Add in kubernetes API vars for VMs
+        result[host].update(api_vars)
+
     return result
 
 def listall(args, config):

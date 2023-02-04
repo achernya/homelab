@@ -1,0 +1,59 @@
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    log stdout format raw local0
+    daemon
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 1
+    timeout http-request    10s
+    timeout queue           20s
+    timeout connect         5s
+    timeout client          20s
+    timeout server          20s
+    timeout http-keep-alive 10s
+    timeout check           10s
+
+#---------------------------------------------------------------------
+# apiserver frontend which proxys to the control plane nodes
+#---------------------------------------------------------------------
+frontend apiserver
+
+    # Use two separate binds rather than a v4v6 bind to avoid logging
+    # IPv4 addresses as mapped
+    bind *:{{ k8s_api_port }},[::]:{{ k8s_api_port }} v6only
+    mode tcp
+    option tcplog
+    default_backend apiserver
+    # Raise timeouts to allow for long-lived API clients like
+    # kubectl get pods -w
+    timeout client       86400s
+
+#---------------------------------------------------------------------
+# round robin balancing for apiserver
+#---------------------------------------------------------------------
+backend apiserver
+    option httpchk GET /healthz
+    http-check expect status 200
+    mode tcp
+    option ssl-hello-chk
+    balance     roundrobin
+{% for kubemaster in groups.kubemasters %}
+        server {{ kubemaster }} {{ hostvars[kubemaster].ansible_host }}:6443 check
+{% endfor %}
+    # Raise timeouts to allow for long-lived API clients like
+    # kubectl get pods -w
+    timeout server       86400s
+    timeout tunnel       86400s

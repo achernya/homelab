@@ -15,7 +15,21 @@ vm_hosts:
     ansible_connection: ssh
     ansible_user: root
     ansible_host: 192.168.1.101
+# Number of kubemasters to be provisioned. The kubemasters run the
+# kubernetes API, scheduler, and etcd. As a result, there should
+# ideally be an odd number of these to avoid split-brain. Going beyond
+# 5 is usually not beneficial.
 kubemasters: 4
+# Number of kubelets for workloads. This should take up ~all remaining
+# resources.
 kubelets: 8
+# How the Kubernetes API is made available. Valid values are
+# 'stacked', 'dedicated-vm', or 'direct'. If set to 'stacked', an
+# haproxy and keepalived will be included as part of each kubemaster
+# and the value of `haproxies` is ignored. If set to 'dedicated-vm',
+# the number of VMs specified by `haproxies` will be provisioned, each
+# running haproxy and kubemaster. If set to 'direct', the machine IP
+# of the first (and hopefully, only) kubemaster is used directly.
+api_mode: 'stacked'
 haproxies: 2
 vm_subnet: 192.168.3.0/24
