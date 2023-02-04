@@ -1,0 +1,16 @@
+# Install cilium
+- name: Install cilium
+  block:
+    - name: Download cilium
+      ansible.builtin.get_url:
+        url: https://github.com/cilium/cilium-cli/releases/download/v0.12.12/cilium-linux-amd64.tar.gz
+        checksum: "sha256:b72e8666b7fdb92b51c72ccf7cd9a4f8dfc8740472085a4c0e85406d1cf3b6e6"
+        dest: "/root/cilium-linux-amd64.tar.gz"
+    - name: Extract cilium
+      ansible.builtin.unarchive:
+        src: "/root/cilium-linux-amd64.tar.gz"
+        dest: /usr/local/bin
+        remote_src: yes
+    # - name: Install cilium
+    #   ansible.builtin.command:
+    #     cmd: cilium install
