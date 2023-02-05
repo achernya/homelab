@@ -1,0 +1,27 @@
+# Install argocd, using the `kubectl proxy` running locally.
+- name: Create argocd namespace
+  community.kubernetes.k8s:
+    name: argocd
+    api_version: v1
+    kind: Namespace
+    state: present
+    host: 'http://127.0.0.1:8001'
+  delegate_to: localhost
+
+- name: Deploy argocd
+  block:
+    - name: Download argocd install.yaml
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        dest: /tmp/argocd-install.yaml
+        mode: '0664'
+      delegate_to: localhost
+    - name: Apply argocd install.yaml
+      community.kubernetes.k8s:
+        api_version: v1
+        namespace: argocd
+        state: present
+        src: /tmp/argocd-install.yaml
+        host: 'http://127.0.0.1:8001'
+      delegate_to: localhost
+

@@ -1,0 +1,12 @@
+# Directly use the cilium CLI to instal cilium the first time. The
+# real cilium installation will happen when argocd puts the
+# customizations on using the cilium helm chart. However, argocd
+# itself can't be scheduled until we have _a_ CNI running ... which is
+# provided by cilium. So this is required to break the dependency
+# cycle.
+- name: Install cilium
+  ansible.builtin.shell:
+    cmd: cilium install > cilium-bootstrap
+  args:
+    chdir: $HOME
+    creates: cilium-bootstrap
