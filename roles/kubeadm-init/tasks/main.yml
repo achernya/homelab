@@ -26,3 +26,36 @@
   when:
     # Join all nodes except the first kubemaster
     - inventory_hostname != play_hosts[0]
+
+# Manually patch the control plane to have exposed API endpoints
+# required for monitoring. Normally, this would be done with --config,
+# but that's mutualy exclusive with many of the arguments we're
+# passing to kubeadm. Since these changes get picked up immediately,
+# this works just as well.
+- name: Patch control-plane manifests
+  block:
+    - name: Update etcd metrics port
+      ansible.builtin.replace:
+        path: /etc/kubernetes/manifests/etcd.yaml
+        regexp: '(^.*?listen-metrics-urls=http://)[^:]+(.*)$'
+        replace: '\g<1>0.0.0.0\g<2>'
+    - name: Update bind-address for kube-scheduler and kube-controller-manager
+      ansible.builtin.replace:
+        path: /etc/kubernetes/manifests/{{ item }}.yaml
+        regexp: '(^.*?bind-address=)(.*)$'
+        replace: '\g<1>0.0.0.0'
+      with_items:
+        - kube-controller-manager
+        - kube-scheduler
+
+- name: Create kubeconfig symlinks
+  block:
+    - name: Ensure /root/.kube exists
+      ansible.builtin.file:
+        path: /root/.kube/
+        state: directory
+    - name: Symlink /etc/kubernetes/admin.conf to /root/.kube/config
+      ansible.builtin.file:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        state: link
