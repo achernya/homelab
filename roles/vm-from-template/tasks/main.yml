@@ -21,7 +21,7 @@
 
 - name: "{{ target_vm_name }} | render cloud-init config"
   vars:
-    ansible_playbook: "cluster-bootstrap"
+    ansible_playbook: "cluster_bootstrap"
   ansible.builtin.template:
     dest: "{{ proxmox_storage_path }}/snippets/{{ target_vm_id }}-cloudinit.yml"
     src: cloud-init.yml.j2
