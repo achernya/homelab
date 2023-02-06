@@ -1,7 +1,3 @@
-# If set, github_username and github_pat will be used as part of the
-# generated ansible-pull command
-github_url: "{{undef(hint='You must specify a github URL for cloning') }}"
-
 # ssh authorized_key that will be installed for root inside the
 # VMs. Must be a key that you have access to to run ansible playbooks
 # across the VMs.

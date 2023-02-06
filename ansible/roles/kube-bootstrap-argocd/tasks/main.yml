@@ -1,3 +1,9 @@
+# Import github variables from the common role
+- name: "Import github variables"
+  ansible.builtin.include_role:
+    name: github
+    public: true
+
 # Install argocd, using the `kubectl proxy` running locally.
 - name: Create argocd namespace
   community.kubernetes.k8s:
@@ -25,3 +31,40 @@
         host: 'http://127.0.0.1:8001'
       delegate_to: localhost
 
+- name: Add this repository
+  block:
+    - name: Add github repository
+      community.kubernetes.k8s:
+        host: 'http://127.0.0.1:8001'
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: homelab
+            namespace: argocd
+            labels:
+              argocd.argoproj.io/secret-type: repository
+          stringData:
+            type: git
+            url: "https://{{ github_url }}"
+      delegate_to: localhost
+    - name: Add github personal access token
+      community.kubernetes.k8s:
+        host: 'http://127.0.0.1:8001'
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: private-repo-creds
+            namespace: argocd
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          stringData:
+            type: git
+            url: "https://{{ github_url }}"
+            password: "{{ github_pat }}"
+            username: "{{ github_username }}"
+      delegate_to: localhost
+      when: github_pat is defined

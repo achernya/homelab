@@ -1,3 +1,9 @@
+# Import github variables from the common role
+- name: "Import github variables"
+  ansible.builtin.include_role:
+    name: github
+    public: true
+
 - name: "Create all VMs"
   include_role:
     name: vm-from-template
