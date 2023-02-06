@@ -68,3 +68,30 @@
             username: "{{ github_username }}"
       delegate_to: localhost
       when: github_pat is defined
+
+- name: Add app-of-apps
+  community.kubernetes.k8s:
+    host: 'http://127.0.0.1:8001'
+    state: present
+    definition:
+      apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      metadata:
+        name: meta
+        namespace: argocd
+      spec:
+        project: default
+        source:
+          repoURL: "https://{{ github_url }}"
+          targetRevision: HEAD
+          path: kubernetes/meta/
+        destination:
+          server: https://kubernetes.default.svc
+          namespace: homelab-meta
+        syncPolicy:
+          syncOptions:
+            - CreateNamespace=true
+          # automated:
+          #   selfHeal: true
+          #   prune: true
+  delegate_to: localhost
