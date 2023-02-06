@@ -12,6 +12,7 @@ import argparse
 import ipaddress
 import itertools
 import json
+import os
 import yaml
 
 from collections import defaultdict, OrderedDict
@@ -157,6 +158,19 @@ def sort_dict(d):
             continue
     return d
 
+def config_path(filename):
+    # First, look for the file in the current working directory. If it
+    # exists, use that.
+    if os.path.exists(filename):
+        return filename
+    # Next, check to see if it's next to this script
+    selfdir = os.path.dirname(__file__)
+    candidate = os.path.join(selfdir, filename)
+    if os.path.exists(candidate):
+        return candidate
+    # Fallback: return the default path for a less-confusing error message
+    return filename
+
 def main():
     parser = argparse.ArgumentParser(
         'inventory',
@@ -170,7 +184,7 @@ def main():
 
     args = parser.parse_args()
     config = None
-    with open(args.config) as f:
+    with open(config_path(args.config)) as f:
         config = yaml.load(f, Loader=Loader)
 
     result = {}
