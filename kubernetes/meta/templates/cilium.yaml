@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: kube-system
+    server: {{ .Values.spec.destination.server }}
+  project: default
+  source:
+    repoURL: https://helm.cilium.io/
+    targetRevision: 1.12.5
+    chart: cilium
+    helm:
+      parameters:
+        # Cluster's default name is "kubernetes", not "default"
+        - name: "cluster.name"
+          value: "kubernetes"
+        # Cluster is deployed with kubeproxy-free
+        - name: "kubeProxyReplacement"
+          value: "strict"
+        # Enable hubble metrics
+        - name: "hubble.metrics.enabled"
+          value: "{dns,drop,tcp,flow,icmp,http}"
+        # Enable hubble relay (required by hubble ui)
+        - name: "hubble.relay.enabled"
+          value: "true"
+        # Enable hubble ui
+        - name: "hubble.ui.enabled"
+          value: "true"
+        # Enable prometheus monitoring (on the agents)
+        - name: "prometheus.enabled"
+          value: "true"
+        # Enable prometheus monitoring on the operator
+        - name: "operator.prometheus.enabled"
+          value: "true"
+        # TODO: Enable all of these once prometheus-operator is installed
+        # - name: "prometheus.serviceMonitor.enabled"
+        #   value: "true"
+        # - name: "hubble.metrics.serviceMonitor.enabled"
+        #   value: "true"
+        # - name: "operator.prometheus.serviceMonitor.enabled"
+        #   value: "true"
+        
+  # Don't try to enforce Cilium's TLS certificates
+  ignoreDifferences:
+    - kind: Secret
+      name: cilium-ca
+      jsonPointers:
+        - /data/ca.crt
+        - /data/ca.key
+    - kind: Secret
+      name: hubble-ca-secret
+      jsonPointers:
+        - /data/ca.crt
+        - /data/ca.key
+    - kind: Secret
+      name: hubble-server-certs
+      jsonPointers:
+        - /data/ca.crt
+        - /data/tls.crt
+        - /data/tls.key
+    - kind: Secret
+      name: hubble-relay-client-certs
+      jsonPointers:
+        - /data/ca.crt
+        - /data/tls.crt
+        - /data/tls.key
