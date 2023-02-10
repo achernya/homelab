@@ -1,0 +1,7 @@
+kube-prometheus-stack:
+  kubeProxy:
+    enabled: false
+    service:
+      enabled: false
+    serviceMonitor:
+      enabled: false
