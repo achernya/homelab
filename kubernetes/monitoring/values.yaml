@@ -1,7 +1,80 @@
 kube-prometheus-stack:
+  # Disable kubeproxy monitoring, since cilium is deployed with
+  # kubeproxy-free mode.
   kubeProxy:
     enabled: false
     service:
       enabled: false
     serviceMonitor:
       enabled: false
+  prometheus:
+    prometheusSpec:
+      additionalScrapeConfigs:
+        # The following configs were taken verbatim from
+        # https://github.com/cilium/cilium/blob/master/examples/kubernetes/addons/prometheus/monitoring-example.yaml#L12865-L12926
+        # and *NOT* from
+        # https://docs.cilium.io/en/latest/observability/metrics/#id1
+        # as the latter seems to be missing some important labels to
+        # make the Grafana dashboards work.
+ 
+        # Pick up cilium metrics automatically
+        - job_name: 'kubernetes-pods'
+          kubernetes_sd_configs:
+          - role: pod
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: (.+):(?:\d+);(\d+)
+              replacement: ${1}:${2}
+              target_label: __address__
+            - action: labelmap
+              regex: __meta_kubernetes_pod_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_pod_name]
+              action: replace
+              target_label: pod
+            - source_labels: [__meta_kubernetes_pod_container_port_number]
+              action: keep
+              regex: \d+
+        # Pick up cilium hubble metrics
+        - job_name: 'kubernetes-endpoints'
+          scrape_interval: 30s
+          kubernetes_sd_configs:
+          - role: endpoints
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_label_k8s_app]
+              action: keep
+              regex: cilium
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+              action: keep
+              regex: true
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+              action: replace
+              target_label: __scheme__
+              regex: (https?)
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+              action: replace
+              target_label: __address__
+              regex: (.+)(?::\d+);(\d+)
+              replacement: $1:$2
+            - action: labelmap
+              regex: __meta_kubernetes_service_label_(.+)
+            - source_labels: [__meta_kubernetes_namespace]
+              action: replace
+              target_label: namespace
+            - source_labels: [__meta_kubernetes_service_name]
+              action: replace
+              target_label: service

@@ -22,6 +22,9 @@ spec:
         # Cluster is deployed with kubeproxy-free
         - name: "kubeProxyReplacement"
           value: "strict"
+        # Enable hubble
+        - name: "hubble.enabled"
+          value: "true"
         # Enable hubble metrics
         - name: "hubble.metrics.enabled"
           value: "{dns,drop,tcp,flow,icmp,http}"
@@ -37,13 +40,9 @@ spec:
         # Enable prometheus monitoring on the operator
         - name: "operator.prometheus.enabled"
           value: "true"
-        # TODO: Enable all of these once prometheus-operator is installed
-        # - name: "prometheus.serviceMonitor.enabled"
-        #   value: "true"
-        # - name: "hubble.metrics.serviceMonitor.enabled"
-        #   value: "true"
-        # - name: "operator.prometheus.serviceMonitor.enabled"
-        #   value: "true"
+        # Disable monitoring for Istio proxy
+        - name: "proxy.prometheus.enabled"
+          value: "false"
         
   # Don't try to enforce Cilium's TLS certificates
   ignoreDifferences:
