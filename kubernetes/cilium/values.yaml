@@ -1,0 +1,25 @@
+cilium:
+  cluster:
+    # Cluster's default name is "kubernetes", not "default"
+    name: "kubernetes"
+  # Cluster is deployed with kubeproxy-free
+  kubeProxyReplacement: strict
+  # Enable hubble
+  hubble:
+    enabled: true
+    # Export metrics to prometheus
+    metrics:
+      enabled: ["dns", "drop", "tcp", "flow", "icmp", "http"]
+    relay:
+      # Enable hubble relay (required by Hubble UI)
+      enabled: true
+    # Enable Hubble UI
+    ui:
+      enabled: true
+  # Enable prometheus monitoring (on the agents)
+  prometheus:
+    enabled: true
+  # Enable prometheus monitoring on the operator
+  operator:
+    prometheus:
+      enabled: true

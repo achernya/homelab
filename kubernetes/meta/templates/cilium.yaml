@@ -11,38 +11,9 @@ spec:
     server: {{ .Values.spec.destination.server }}
   project: default
   source:
-    repoURL: https://helm.cilium.io/
-    targetRevision: 1.12.5
-    chart: cilium
-    helm:
-      parameters:
-        # Cluster's default name is "kubernetes", not "default"
-        - name: "cluster.name"
-          value: "kubernetes"
-        # Cluster is deployed with kubeproxy-free
-        - name: "kubeProxyReplacement"
-          value: "strict"
-        # Enable hubble
-        - name: "hubble.enabled"
-          value: "true"
-        # Enable hubble metrics
-        - name: "hubble.metrics.enabled"
-          value: "{dns,drop,tcp,flow,icmp,http}"
-        # Enable hubble relay (required by hubble ui)
-        - name: "hubble.relay.enabled"
-          value: "true"
-        # Enable hubble ui
-        - name: "hubble.ui.enabled"
-          value: "true"
-        # Enable prometheus monitoring (on the agents)
-        - name: "prometheus.enabled"
-          value: "true"
-        # Enable prometheus monitoring on the operator
-        - name: "operator.prometheus.enabled"
-          value: "true"
-        # Disable monitoring for Istio proxy
-        - name: "proxy.prometheus.enabled"
-          value: "false"
+    path: kubernetes/cilium
+    repoURL: {{ .Values.spec.source.repoURL }}
+    targetRevision: {{ .Values.spec.source.targetRevision }}
         
   # Don't try to enforce Cilium's TLS certificates
   ignoreDifferences:
