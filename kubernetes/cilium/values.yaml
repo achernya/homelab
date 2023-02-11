@@ -9,10 +9,21 @@ cilium:
     enabled: true
     # Export metrics to prometheus
     metrics:
-      enabled: ["dns", "drop", "tcp", "flow", "icmp", "http"]
+      enabled:
+        - dns
+        - drop
+        - tcp
+        - icmp
+        - "flow:sourceContext=workload-name|reserved-identity;destinationContext=workload-name|reserved-identity"
+        - "httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction;sourceContext=workload-name|reserved-identity;destinationContext=workload-name|reserved-identity"
       serviceMonitor:
         enabled: true
         labels: {"release": "monitoring"}
+      dashboards:
+        enabled: true
+        namespace: monitoring
+        annotations:
+          grafana_folder: "Hubble"
     relay:
       # Enable hubble relay (required by Hubble UI)
       enabled: true
