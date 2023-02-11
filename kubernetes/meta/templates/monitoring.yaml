@@ -14,6 +14,9 @@ spec:
     path: kubernetes/monitoring
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
+    # Don't include the CRDs, since they need to be run with Replace
+    helm:
+      skipCrds: true
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
