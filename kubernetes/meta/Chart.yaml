@@ -3,6 +3,6 @@ name: applications
 description: Applications
 type: application
 # Follows semver, must be updated every time this chart is modified.
-version: 0.0.2
+version: 0.0.3
 # Version of the application, for display. Does not have to follow semver.
 appVersion: "0.1"
