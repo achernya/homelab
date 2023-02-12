@@ -37,3 +37,11 @@ cilium:
       serviceMonitor:
         enabled: true
         labels: {"release": "monitoring"}
+  # Configure loadbalancer
+  loadBalancer:
+    algorithm: "maglev"
+  bgp:
+    enabled: true
+    announce:
+      loadbalancerIP: true
+
