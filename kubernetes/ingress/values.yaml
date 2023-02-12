@@ -1,0 +1,9 @@
+traefik:
+  metrics:
+    prometheus:
+      service:
+        enabled: true
+      serviceMonitor:
+        enable: true
+        additionalLabels:
+          release: "monitoring"

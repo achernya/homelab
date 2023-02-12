@@ -4,6 +4,9 @@ metadata:
   name: argocd-cm
   namespace: argocd
 data:
+  # Don't clobber app.kubernetes.io/instance, some apps depend on this.
+  application.instanceLabelKey: "argocd.argoproj.io/instance"
+  # Ignore Cilium-generated values
   resource.exclusions: |
     - apiGroups:
         - cilium.io
