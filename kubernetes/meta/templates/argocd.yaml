@@ -5,6 +5,12 @@ metadata:
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Make sure ArgoCD customizations are applied before all other
+    # apps. These control how Argo applies other apps, including
+    # ignoring Cilium-injected resources, otherwise they'll always be
+    # out of sync.
+    argocd.argoproj.io/sync-wave: "-9000"
 spec:
   destination:
     namespace: argocd

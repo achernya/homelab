@@ -5,6 +5,10 @@ metadata:
   namespace: argocd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # Monitoring CRDs have to be done very early, otherwise other helm
+    # charts that try to create ServiceMonitor resources will fail.
+    argocd.argoproj.io/sync-wave: "-8900"
 spec:
   destination:
     namespace: monitoring
