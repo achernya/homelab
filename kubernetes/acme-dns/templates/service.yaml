@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "acme-dns.fullname" . }}
+  labels:
+    {{- include "acme-dns.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.dns.type }}
+  ports:
+    - port: {{ .Values.service.dns.port }}
+      targetPort: dns-tcp
+      protocol: TCP
+      name: dns-tcp
+    - port: {{ .Values.service.dns.port }}
+      targetPort: dns-udp
+      protocol: UDP
+      name: dns-udp
+  selector:
+    {{- include "acme-dns.selectorLabels" . | nindent 4 }}
