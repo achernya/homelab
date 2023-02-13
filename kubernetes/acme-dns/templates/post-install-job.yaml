@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "acme-dns.fullname" . }}
+  labels:
+    {{- include "acme-dns.labels" . | nindent 4 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "acme-dns.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: post-install-job
+        image: "ghcr.io/achernya/k8s-secret-writer:release"
+        imagePullPolicy: Always
+        command: ["/bin/sh", "-c"]
+        # The sleep 10 is pretty janky, it should be replaced with a
+        # while loop with timeout until the service is healthy.
+        args:
+          - |
+            sleep 10;
+            curl -X POST http://{{ include "acme-dns.fullname" . }}-api.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.api.port }}/register | /app/secret-writer -namespace={{ .Release.Namespace }} -secret-name=acme-dns-creds -secret-key=acmedns.json
+

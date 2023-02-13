@@ -18,3 +18,7 @@ object. However, since that's quite frankly overkill for a single
 wildcard certificate (which is the envisioned deployment for most
 users), this chart hopes to manage the acme-dns secret minimally and
 automatically.
+
+This chart makes use of a small Go program called
+[k8s-secret-writer](https://github.com/achernya/k8s-secret-writer) to
+write the secret.
