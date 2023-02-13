@@ -12,17 +12,18 @@ data:
     # protocol, "both", "both4", "both6", "udp", "udp4", "udp6" or "tcp", "tcp4", "tcp6"
     protocol = "both"
     # domain name to serve the requests off of
-    domain = "auth.example.org"
+    domain = "{{ .Values.acmedns.domain }}"
     # zone name server
-    nsname = "auth.example.org"
+    nsname = "{{ .Values.acmedns.domain }}"
     # admin email address, where @ is substituted with .
-    nsadmin = "admin.example.org"
+    nsadmin = "{{ .Values.acmedns.adminEmail | replace "@" "." }}"
     # predefined records served in addition to the TXT
     records = [
       # domain pointing to the public IP of your acme-dns server
-      "auth.example.org. A 198.51.100.1",
-      # specify that auth.example.org will resolve any *.auth.example.org records
-      "auth.example.org. NS auth.example.org.",
+      "{{ .Values.acmedns.domain }}. {{ .Values.acmedns.domainHostedAt }}",
+      # specify that this server is the authoritative nameserver for
+      # all subdomains.
+      "{{ .Values.acmedns.domain }}. NS {{ .Values.acmedns.domain }}.",
     ]
     # debug messages from CORS etc
     debug = false

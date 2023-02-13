@@ -74,6 +74,11 @@ spec:
         - name: config
           configMap:
             name: acme-dns-config
+        # TODO: This is semi-persistent, as it depends on a path
+        # exposed on the kubelet, but there's no node-affinity
+        # constraints. This needs to be replaced with a
+        # PersistentVolumeClaim once storage is enabled, or
+        # node-affinity should be supported.
         - name: data
           hostPath:
             path: /opt/acme-dns/data

@@ -36,6 +36,12 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+# `service` block has two entries:
+
+# - dns, which is the actual service exposed to the outside
+#   world. LoadBalancer is recommended here.
+# - api, which is the internal API to be called by
+#   cert-manager. ClusterIP is sufficient.
 service:
   dns:
     type: LoadBalancer
@@ -44,6 +50,15 @@ service:
     type: ClusterIP
     port: 8080
 
+acmedns:
+  # Domain that acme-dns will be serving from. All records it creates
+  # will be subdomains within this domain. No trailing dot.
+  domain: "acme.achernya.com"
+  # Email of the administrator, for use in DNS records.
+  adminEmail: "nsadmin@achernya.com"
+  # Location of `domain`. Should be either A/AAAA followed by an IP
+  # address or CNAME followed by a name.
+  domainHostedAt: "CNAME large-format.achernya.com."
+
 autoscaling:
   enabled: false
-
