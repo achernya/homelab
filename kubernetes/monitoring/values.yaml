@@ -8,3 +8,23 @@ kube-prometheus-stack:
     serviceMonitor:
       enabled: false
   prometheus:
+
+loki:
+  storage:
+    # Temporarily put logs on local disk
+    type: filesystem
+  monitoring:
+    serviceMonitor:
+      enabled: true
+      labels: {"release": "monitoring"}
+    selfMonitoring:
+      enabled: false
+      grafanaAgent:
+        installOperator: false
+  test:
+    # Disabled beacuse selfMonitoring is disabled
+    enabled: false
+promtail:
+  serviceMonitor:
+    enabled: true
+    labels: {"release": "monitoring"}
