@@ -1,0 +1,9 @@
+dependencies:
+- name: cert-manager
+  repository: https://charts.jetstack.io
+  version: v1.11.0
+- name: acme-dns
+  repository: file://../acme-dns/
+  version: 0.1.0
+digest: sha256:a5d008027faf15dd82c5bd2be1e0fa1055a96d6ceb57c6beef147543cf30ef2c
+generated: "2023-02-19T18:46:07.238068627-05:00"
