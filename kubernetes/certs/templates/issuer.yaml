@@ -17,5 +17,5 @@ spec:
         acmeDNS:
           host: https://acme.achernya.com
           accountSecretRef:
-            name: acme-dns
+            name: acme-dns-creds
             key: acmedns.json
