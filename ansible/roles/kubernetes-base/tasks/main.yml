@@ -15,14 +15,14 @@
         state: directory
         mode: '0755'
 
-    - name: Download kubernetes-archive-keyring
+    - name: Download kubernetes-apt-keyring
       ansible.builtin.get_url:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+        url: https://pkgs.k8s.io/core:/stable:/v1.26/deb/Release.key
+        dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
 
     - name: Configure kubernetes repository
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.26/deb/ /"
         filename: kubernetes
         state: present
       notify: update apt
