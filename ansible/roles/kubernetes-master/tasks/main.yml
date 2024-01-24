@@ -11,6 +11,3 @@
         src: "/root/cilium-linux-amd64.tar.gz"
         dest: /usr/local/bin
         remote_src: yes
-    # - name: Install cilium
-    #   ansible.builtin.command:
-    #     cmd: cilium install
