@@ -1,0 +1,20 @@
+# Expired tokens don't get cleaned up automatically, so delete
+# explicitly. Also helps in case the playbook is run more frequently
+# than the token expiry time, even if they did get cleaned up
+- name: proxmox-api | delete old API token
+  ansible.builtin.shell: |
+    pvesh delete /access/users/{{ proxmox_api_user }}/token/{{ base_proxmox_api_token_id }}-{{ inventory_hostname }} --output-format=json
+  ignore_errors: true
+  changed_when: false
+
+# Create the new token
+- name: proxmox-api | create temporary API token
+  ansible.builtin.shell: |
+    pvesh create /access/users/{{ proxmox_api_user }}/token/{{ base_proxmox_api_token_id }}-{{ inventory_hostname }} --expire=$(expr $(date +%s)  + 600 ) --privsep=0 --output-format=json
+  register: pvesh_json
+
+# Make it available to the rest of the playbook
+- name: proxmox-api | register API token
+  ansible.builtin.set_fact:
+    proxmox_api_token_id: "{{ base_proxmox_api_token_id }}-{{ inventory_hostname }}"
+    proxmox_api_token_secret: "{{ pvesh_json.stdout | from_json | json_query('value') }}"

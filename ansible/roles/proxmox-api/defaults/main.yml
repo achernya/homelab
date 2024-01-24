@@ -16,6 +16,6 @@ proxmox_storage_path: "/var/lib/vz"
 # enabled.
 proxmox_volume_storage: "local-zfs"
 
-# API tokens for Proxmox
-proxmox_api_token_id: "{{ undef(hint='You must specify a Proxmox API Token ID') }}"
-proxmox_api_token_secret: "{{ undef(hint='You must specify a Proxmox API TOken secret') }}"
+# Name of the API tokens for Proxmox. There should be no need to
+# change this, but can be customized if desired.
+base_proxmox_api_token_id: "root-ansible"
