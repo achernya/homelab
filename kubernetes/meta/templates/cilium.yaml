@@ -24,9 +24,6 @@ spec:
         - /data/ca.key
     - kind: Secret
       name: hubble-ca-secret
-      jsonPointers:
-        - /data/ca.crt
-        - /data/ca.key
     - kind: Secret
       name: hubble-server-certs
       jsonPointers:
@@ -39,3 +36,7 @@ spec:
         - /data/ca.crt
         - /data/tls.crt
         - /data/tls.key
+    - kind: ConfigMap
+      name: hubble-ca-cert
+      jsonPointers:
+        - /data/ca.crt

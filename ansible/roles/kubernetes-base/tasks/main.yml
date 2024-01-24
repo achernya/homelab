@@ -17,12 +17,12 @@
 
     - name: Download kubernetes-apt-keyring
       ansible.builtin.get_url:
-        url: https://pkgs.k8s.io/core:/stable:/v1.26/deb/Release.key
+        url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
         dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
 
     - name: Configure kubernetes repository
       ansible.builtin.apt_repository:
-        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.26/deb/ /"
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
         filename: kubernetes
         state: present
       notify: update apt
@@ -53,7 +53,9 @@
         - cri-tools
         - containerd
     
-# Replace debian containerd with "official" release. Debian containerd in bullseye is too old
+# Replace debian containerd with "official" release. Debian containerd
+# in bullseye is too old. Debian bookworm has containerd 1.6.20 and
+# does not need replacement.
 - name: Install newer containerd than available in Debian
   block:
     - name: Download newer containerd
@@ -61,11 +63,12 @@
         url: https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-amd64.tar.gz
         checksum: "sha256:2415b431a900275c14942f87f751e1e13d513c1c2f062322b5ca5a9a2190f22a"
         dest: "/root/containerd-linux-amd64.tar.gz"
-    - name: Extract cilium
+    - name: Extract containerd
       ansible.builtin.unarchive:
         src: "/root/containerd-linux-amd64.tar.gz"
         dest: /usr/
         remote_src: yes
+  when: ansible_distribution == 'Debian' and ansible_distribution_version == '11'
 
 # Configure containerd
 - name: Configure containerd
