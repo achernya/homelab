@@ -7,4 +7,3 @@ kube-prometheus-stack:
       enabled: false
     serviceMonitor:
       enabled: false
-  prometheus:
