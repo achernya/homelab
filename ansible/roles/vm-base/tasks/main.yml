@@ -18,3 +18,7 @@
   ansible.builtin.shell:
     cmd: rm -f /run/network/interfaces.d/*
   notify: restart networking
+  # Debian 12 uses systemd-networkd and doesn't have the cloud-init
+  # auto-generated network configuration for DHCP problem that Debian
+  # had.
+  when: ansible_distribution == 'Debian' and ansible_distribution_version == '11'
