@@ -12,7 +12,7 @@
     target_vm_name: "{{ vm.name }}"
     target_vm_host: "{{ vm.host }}"
     target_vm_ip: "{{ vm.ip }}/24"
-    template_vm_name: "debian-11-template"
+    template_vm_name: "debian-12-template"
     template_vm_host: "parallax-1"
   with_items: "{{ all_vms }}"
   loop_control:

@@ -5,12 +5,12 @@
 
 - name: Download Debian Cloud image
   ansible.builtin.get_url:
-    url: https://cloud.debian.org/images/cloud/bullseye/20230124-1270/debian-11-genericcloud-amd64-20230124-1270.qcow2
-    dest: "{{ proxmox_storage_path }}/template/iso/debian-11-genericcloud-amd64.qcow2"
+    url: "{{ debian_image_url }}"
+    dest: "{{ proxmox_storage_path }}/template/iso/{{ debian_dest_filename }}"
     mode: "0644"
     # This is paranoia since we"re downloading over HTTPS, but also
     # means that the download is not attempted if the file matches
-    checksum: "sha256:14caeec68ba3129a115a9b57396d08dc0973cc9f569ce049232d7d15d768ad41"
+    checksum: "{{ debian_checksum }}"
   when: inventory_hostname == play_hosts[0]
 
 - name: Create debian-template base VM
@@ -20,8 +20,8 @@
     api_token_id: "{{ proxmox_api_token_id }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
     proxmox_default_behavior: "no_defaults"
-    name: debian-11-template
-    vmid: 1000
+    name: "{{ template_vm_name }}"
+    vmid: "{{ template_vmid }}"
     node: parallax-1
     memory: "{{ 8 * 1024 }}" # in MiB
     agent: yes
@@ -40,7 +40,7 @@
 
 - name: Check configuration of base VM
   ansible.builtin.command:
-    cmd: qm config 1000
+    cmd: "qm config {{ template_vmid }}"
   register: vm_config
   # This command is read-only
   changed_when: false
@@ -51,9 +51,9 @@
     cmd: "{{ item }}"
   with_items:
     # Import the disk from the QCOW2 image to the underlying storage as a raw disk image
-    - "qm importdisk 1000 {{ proxmox_storage_path }}/template/iso/debian-11-genericcloud-amd64.qcow2 {{ proxmox_volume_storage }}"
+    - "qm importdisk {{ template_vmid }} {{ proxmox_storage_path }}/template/iso/{{ debian_dest_filename }} {{ proxmox_volume_storage }}"
     # Activate the disk, attaching it to the SCSI bus and making it a boot target
-    - "qm set 1000 --scsi0 {{ proxmox_volume_storage }}:vm-1000-disk-0 --bootdisk scsi0"
+    - "qm set {{ template_vmid }} --scsi0 {{ proxmox_volume_storage }}:vm-{{ template_vmid }}-disk-0 --bootdisk scsi0"
   when:
     - inventory_hostname == play_hosts[0]
     - vm_config.stdout.find("scsi0") == -1
@@ -62,7 +62,7 @@
   ansible.builtin.command:
     cmd: "{{ item }}"
   with_items:
-    - "qm set 1000 --scsi1 {{ proxmox_volume_storage }}:cloudinit"
+    - "qm set {{ template_vmid }} --scsi1 {{ proxmox_volume_storage }}:cloudinit"
   when:
     - inventory_hostname == play_hosts[0]
     - vm_config.stdout.find("scsi1") == -1
@@ -77,7 +77,7 @@
     discard: "on"
     disk: "scsi0"
     ssd: true
-    vmid: 1000
+    vmid: "{{ template_vmid }}"
   when:
     - inventory_hostname == play_hosts[0]
     - vm_config.stdout.find("scsi0") == -1
@@ -88,7 +88,7 @@
     api_user: "{{ proxmox_api_user }}"
     api_token_id: "{{ proxmox_api_token_id }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
-    vmid: 1000
+    vmid: "{{ template_vmid }}"
     disk: "scsi0"
     size: "{{ 40 * 1024 * 1024 * 1024 }}" # in bytes, despite documentation saying GiB
     state: "resized"
@@ -100,7 +100,7 @@
 # clones from working. So use the conversion command explicitly.
 - name: Convert base VM to template
   ansible.builtin.command:
-    cmd: qm template 1000
+    cmd: "qm template {{ template_vmid }}"
   when:
     - inventory_hostname == play_hosts[0]
     - vm_config.stdout.find("template:") == -1

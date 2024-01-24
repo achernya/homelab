@@ -1,0 +1,5 @@
+debian_image_url: "https://cloud.debian.org/images/cloud/bookworm/20240102-1614/debian-12-genericcloud-amd64-20240102-1614.qcow2"
+debian_dest_filename: "debian-12-genericcloud-amd64.qcow2"
+debian_checksum: "sha256:ef9270aee834900d5195b257d7580dc96483a298bf54e5c0555385dc23036e90"
+template_vm_name: "debian-12-template"
+template_vmid: 1001
