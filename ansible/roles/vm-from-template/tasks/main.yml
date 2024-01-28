@@ -39,6 +39,7 @@
     cicustom: "vendor={{ proxmox_storage_id }}:snippets/{{ target_vm_id }}-cloudinit.yml"
     ipconfig:
       ipconfig0: "gw={{ target_vm_ip | ipaddr('network/prefix') | ipaddr('1') | ipaddr('address') }},ip={{ target_vm_ip }}"
+      ipconfig1: "ip={{ target_vm_internal_ip }}"
 
 - name: "{{ target_vm_name }} | start VM"
   community.general.proxmox_kvm:

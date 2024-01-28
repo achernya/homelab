@@ -32,6 +32,7 @@
     machine: "q35"
     net:
       net0: "virtio,bridge=vmbr0"
+      net1: "virtio,bridge=vmbr1"
     ostype: "l26"
     scsihw: "virtio-scsi-pci"
     serial:

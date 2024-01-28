@@ -60,32 +60,42 @@ def vmvars(config):
     vms = []
 
     subnet = ipaddress.ip_network(config['vm_subnet'])
+    internal_subnet = ipaddress.ip_network(config['internal_subnet'])
 
     base_vm_id = 1011
     base_network_addr = subnet.network_address + 11
+    base_internal_network_addr = internal_subnet.network_address + 11
     hypervisors = sorted(all_hypervisors(config))
 
     kubemasters = sorted(all_kubemasters(config))
     for vm, host in zip(kubemasters, itertools.cycle(hypervisors)):
-        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
+        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id,
+                    'ip': str(base_network_addr), 'internal_ip': str(base_internal_network_addr)})
         base_vm_id += 1
         base_network_addr += 1
+        base_internal_network_addr += 1
 
     base_vm_id = 1021
     base_network_addr = subnet.network_address + 21
+    base_internal_network_addr = internal_subnet.network_address + 21
     haproxies = sorted(all_haproxies(config))
     for vm, host in zip(haproxies, itertools.cycle(hypervisors)):
-        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
+        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id,
+                    'ip': str(base_network_addr), 'internal_ip': str(base_internal_network_addr)})
         base_vm_id += 1
         base_network_addr += 1
+        base_internal_network_addr += 1
 
     base_vm_id = 1031
     base_network_addr = subnet.network_address + 31
+    base_internal_network_addr = internal_subnet.network_address + 31
     kubelets = sorted(all_kubelets(config))
     for vm, host in zip(kubelets, itertools.cycle(hypervisors)):
-        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id, 'ip': str(base_network_addr)})
+        vms.append({'name': vm, 'host': host, 'vm_id': base_vm_id,
+                    'ip': str(base_network_addr), 'internal_ip': str(base_internal_network_addr)})
         base_vm_id += 1
         base_network_addr += 1
+        base_internal_network_addr += 1
 
     return vms
 
