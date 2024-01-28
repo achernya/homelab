@@ -6,7 +6,7 @@
 # cycle.
 - name: Install cilium
   ansible.builtin.shell:
-    cmd: cilium install > cilium-bootstrap
+    cmd: cilium install --set="ipam.operator.clusterPoolIPv4PodCIDRList=10.244.0.0/16" > cilium-bootstrap
   args:
     chdir: $HOME
     creates: cilium-bootstrap

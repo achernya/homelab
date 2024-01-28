@@ -2,6 +2,10 @@ cilium:
   cluster:
     # Cluster's default name is "kubernetes", not "default"
     name: "kubernetes"
+  # Cluster internal IP range is not the 10.0.0.0/8 default
+  ipam:
+    operator:
+      clusterPoolIPv4PodCIDRList: "10.244.0.0/16"
   # Cluster is deployed with kubeproxy-free
   kubeProxyReplacement: strict
   # Enable hubble

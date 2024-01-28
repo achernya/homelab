@@ -3,7 +3,7 @@
     name: haproxy-k8s-api
 
 - name: Initialize k8s cluster
-  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --skip-token-print --skip-phases=addon/kube-proxy {{ '--control-plane-endpoint={}:{}'.format(k8s_api_vip, k8s_api_port) if k8s_api_mode != 'direct' else '' }} >> cluster-initialized
+  shell: kubeadm init --pod-network-cidr=10.244.0.0/16 --service-cidr=10.254.240.0/20 --skip-token-print --skip-phases=addon/kube-proxy {{ '--control-plane-endpoint={}:{}'.format(k8s_api_vip, k8s_api_port) if k8s_api_mode != 'direct' else '' }} >> cluster-initialized
   args:
     chdir: $HOME
     creates: cluster-initialized
