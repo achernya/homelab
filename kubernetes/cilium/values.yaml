@@ -13,6 +13,9 @@ cilium:
       serviceMonitor:
         enabled: true
         labels: {"release": "monitoring"}
+      # Also include grafana dashboard
+      dashboards:
+        enabled: true
     relay:
       # Enable hubble relay (required by Hubble UI)
       enabled: true
@@ -30,6 +33,11 @@ cilium:
     serviceMonitor:
       enabled: true
       labels: {"release": "monitoring"}
+      # CRDs will be installed by the monitoring chart.
+      trustCRDsExist: true
+  # Enable grafafna dashboard (on the agents)
+  dashboards:
+    enabled: true
   # Enable prometheus monitoring on the operator
   operator:
     prometheus:
@@ -37,6 +45,8 @@ cilium:
       serviceMonitor:
         enabled: true
         labels: {"release": "monitoring"}
+    dashboards:
+      enabled: true
   # Configure loadbalancer
   loadBalancer:
     algorithm: "maglev"
