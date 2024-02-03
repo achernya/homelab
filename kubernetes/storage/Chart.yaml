@@ -1,8 +1,13 @@
 apiVersion: v2
 name: applications
-description: Applications
+description: Storage
 type: application
 # Follows semver, must be updated every time this chart is modified.
-version: 0.0.4
+version: 0.0.1
 # Version of the application, for display. Does not have to follow semver.
-appVersion: "0.1"
+appVersion: "0.0.1"
+
+dependencies:
+  - name: rook-ceph
+    version: v1.13.3
+    repository: https://charts.rook.io/release

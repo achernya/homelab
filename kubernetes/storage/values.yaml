@@ -1,0 +1,9 @@
+rook-ceph:
+  # TODO(achernya): Do we need the liveness sidecar when the cluster
+  # is external?
+  # csi:
+  #   serviceMonitor:
+  #     enabled: true
+  #   enableLiveness: true
+  monitoring:
+    enabled: true
