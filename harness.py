@@ -14,10 +14,15 @@
 # otherwise-manual steps that don't fit into Ansible's execution
 # model.
 
+from typing import Optional
+
 import argparse
-import collections
+import contextlib
+import dataclasses
 import os
 import pprint
+import shutil
+import subprocess
 import sys
 
 import ansible_runner
@@ -25,7 +30,29 @@ import ansible_runner
 class PlaybookError(Exception):
     pass
 
-Step = collections.namedtuple('Step', ['playbook', 'desc'])
+@contextlib.contextmanager
+def noop(*args, **kwargs):
+    yield
+
+@contextlib.contextmanager
+def kubectl_proxy(*args, **kwargs):
+    p = None
+    try:
+        p = subprocess.Popen(
+            [shutil.which('kubectl'), 'proxy'],
+            stdout=subprocess.DEVNULL)
+        yield
+    finally:
+        if not p:
+            return
+        p.terminate()
+        p.wait()
+
+@dataclasses.dataclass
+class Step:
+    playbook: str
+    desc: str
+    context: Optional[contextlib.contextmanager] = noop
 
 STEPS = [
     Step(playbook='create_template.yml',
@@ -35,7 +62,8 @@ STEPS = [
     Step(playbook='kubeadm.yml',
          desc='Form the kubernetes cluster'),
     Step(playbook='install_apps.yml',
-         desc='Install low-level cluster apps'),
+         desc='Install low-level cluster apps',
+         context = kubectl_proxy),
 ]
 
 def path_to(ansible_resource: str):
@@ -64,7 +92,8 @@ def run_playbook(desc: str, playbook: str):
 
 def run_steps(steps):
     for i, step in enumerate(steps):
-        run_playbook(f'[{i+1}/{len(steps)}] {step.desc}', step.playbook)
+        with step.context() as c:
+            run_playbook(f'[{i+1}/{len(steps)}] {step.desc}', step.playbook)
 
 def main():
     parser = argparse.ArgumentParser(

@@ -17,10 +17,21 @@ You need a Debian machine to act as the "controller" from which all
 automation is run. Install the dependencies:
 
 ```
-$ sudo apt install ansible python3-openshift kubernetes-client
+$ sudo apt install ansible python3-ansible-runner python3-openshift kubernetes-client
 ```
 
 ## Bootstrapping the cluster
+
+Bootstrapping the cluster can be accomplished with a single command,
+
+```
+$ ./harness.py
+```
+
+This command serves as a layer of meta-automation over the individual
+Ansible playbooks which perform small, focused tasks.
+
+## Ansible details
 
 The cluster itself is bootstrapped using
 [Ansible](https://www.ansible.com/) playbooks. The playbooks are in
@@ -32,9 +43,9 @@ uses them to generate the mapping of VMs to VM hosts. This file needs
 to be edited to reflect the available hypervisor infrastructure,
 desired number of VMs, and the subnet they will reside in.
 
-Once the cluster config is updated, it's time to run the playbooks. At
-this time, there's no meta-automation playbook, so you have to invoke
-the playbooks in the right order manually:
+Once the cluster config is updated, it's time to run the
+playbooks. Either use the automation harness, or invoke the playbooks
+in the right order manually:
 
 1. `create_template.yml`, which fetches a Debian Cloud pre-made image
    and loads it into Proxmox. All subsequent VMs are cloned from this
@@ -65,5 +76,5 @@ the playbooks in the right order manually:
 The playbooks can be executed by running
 
 ```
-$ ansible-playbook -i inventory.py PLAYBOOK_NAME.yml --ask-vault-password
+$ ansible-playbook -i inventory.py PLAYBOOK_NAME.yml
 ```
