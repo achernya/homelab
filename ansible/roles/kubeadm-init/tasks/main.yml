@@ -59,3 +59,19 @@
         src: /etc/kubernetes/admin.conf
         dest: /root/.kube/config
         state: link
+
+- name: Copy kubeconfig locally
+  block:
+    - name: Ensure /root/.kube exists
+      ansible.builtin.file:
+        path: ~/.kube/
+        state: directory
+      delegate_to: localhost
+    - name: Fetch /etc/kubernetes/admin.conf to ~/.kube/config
+      ansible.builtin.fetch:
+        src: /etc/kubernetes/admin.conf
+        dest: ~/.kube/config
+        flat: true
+      when:
+        # Only copy the credentials once
+        - inventory_hostname == play_hosts[0]
