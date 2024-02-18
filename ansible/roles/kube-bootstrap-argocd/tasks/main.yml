@@ -3,6 +3,17 @@
   ansible.builtin.include_role:
     name: github
     public: true
+- name: Ensure kubectl proxy is running
+  ansible.builtin.uri:
+    url: 'http://127.0.0.1:8001/readyz?verbose'
+    return_content: yes
+    status_code:
+      - 200
+  retries: 5
+  delay: 1
+  register: uri_output
+  until: uri_output.status == 200
+  delegate_to: localhost
 
 # Install argocd, using the `kubectl proxy` running locally.
 - name: Create argocd namespace
