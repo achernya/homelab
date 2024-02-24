@@ -3,7 +3,7 @@
     filter: status
   register: res
   until: "res.cloud_init_data_facts.status.v1.stage is defined and not res.cloud_init_data_facts.status.v1.stage"
-  retries: 50
+  retries: 100
   delay: 5
   delegate_to: "{{ target_vm_name }}"
 
