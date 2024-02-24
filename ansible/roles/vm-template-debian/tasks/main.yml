@@ -22,7 +22,7 @@
     proxmox_default_behavior: "no_defaults"
     name: "{{ template_vm_name }}"
     vmid: "{{ template_vmid }}"
-    node: parallax-1
+    node: "{{ groups['hypervisors'][0] }}"
     memory: "{{ 8 * 1024 }}" # in MiB
     agent: yes
     boot: "cnd"

@@ -14,7 +14,7 @@
     target_vm_ip: "{{ vm.ip }}/24"
     target_vm_internal_ip: "{{ vm.internal_ip }}/16"
     template_vm_name: "debian-12-template"
-    template_vm_host: "parallax-1"
+    template_vm_host: "{{ groups['hypervisors'][0] }}"
   with_items: "{{ all_vms }}"
   loop_control:
     loop_var: vm
