@@ -18,3 +18,12 @@
   with_items: "{{ all_vms }}"
   loop_control:
     loop_var: vm
+
+- name: "Wait for cloud-init on all VMs"
+  include_role:
+    name: wait-for-cloud-init
+  vars:
+    target_vm_name: "{{ vm.name }}"
+  with_items: "{{ all_vms }}"
+  loop_control:
+    loop_var: vm
