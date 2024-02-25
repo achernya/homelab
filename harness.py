@@ -75,7 +75,7 @@ STEPS = [
     Step(playbook="create_vms.yml", desc="Create all Kubernetes VMs"),
     Step(playbook="kubeadm.yml", desc="Form the kubernetes cluster"),
     Step(
-        playbook="install_apps.yml",
+        playbook="low_level_apps.yml",
         desc="Install low-level cluster apps",
         context=kubectl_proxy,
     ),

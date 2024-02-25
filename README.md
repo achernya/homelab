@@ -67,7 +67,7 @@ in the right order manually:
    [CNI](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/). Copy
    over the `/root/.kube/config` to your "controller" machine so you
    can run `kubectl` locally.
-1. `install_apps.yml`, which bootstraps [cilium](https://cilium.io/)
+1. `low_level_apps.yml`, which bootstraps [cilium](https://cilium.io/)
    as the CNI and installs
    [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) to manage the
    rest of the applications. This playbook requires `kubectl proxy` be
