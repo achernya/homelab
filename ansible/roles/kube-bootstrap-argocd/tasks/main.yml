@@ -3,6 +3,7 @@
   ansible.builtin.include_role:
     name: github
     public: true
+
 - name: Ensure kubectl proxy is running
   ansible.builtin.uri:
     url: 'http://127.0.0.1:8001/readyz?verbose'
@@ -17,7 +18,7 @@
 
 # Install argocd, using the `kubectl proxy` running locally.
 - name: Create argocd namespace
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     name: argocd
     api_version: v1
     kind: Namespace
@@ -34,7 +35,7 @@
         mode: '0664'
       delegate_to: localhost
     - name: Apply argocd install.yaml
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         api_version: v1
         namespace: argocd
         state: present
@@ -45,7 +46,7 @@
 - name: Add this repository
   block:
     - name: Add github repository
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         host: 'http://127.0.0.1:8001'
         state: present
         definition:
@@ -61,7 +62,7 @@
             url: "https://{{ github_url }}"
       delegate_to: localhost
     - name: Add github personal access token
-      community.kubernetes.k8s:
+      kubernetes.core.k8s:
         host: 'http://127.0.0.1:8001'
         state: present
         definition:
@@ -81,7 +82,7 @@
       when: github_pat is defined
 
 - name: Add app-of-apps
-  community.kubernetes.k8s:
+  kubernetes.core.k8s:
     host: 'http://127.0.0.1:8001'
     state: present
     definition:
