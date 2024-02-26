@@ -79,6 +79,11 @@ STEPS = [
         desc="Install low-level cluster apps",
         context=kubectl_proxy,
     ),
+    Step(
+        playbook="mid_level_apps.yml",
+        desc="Install mid-level cluster apps",
+        context=argocd_portfwd,
+    ),
 ]
 
 

@@ -1,0 +1,5 @@
+- hosts: kubemaster-01
+  roles:
+    - sync-apps
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

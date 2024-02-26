@@ -1,0 +1,65 @@
+- name: argocd | get ArgoCD token
+  block:
+    - name: argocd | get token
+      ansible.builtin.uri:
+        url: "https://localhost:8080/api/v1/session"
+        method: POST
+        headers:
+          Content-Type: "application/json"
+        body_format: json
+        body:
+          username: admin
+          password: >-
+            {{ query('kubernetes.core.k8s', kind='Secret', namespace='argocd',
+                   resource_name='argocd-initial-admin-secret')[0]['data']['password'] | b64decode }}
+        return_content: yes
+        validate_certs: no
+      register: response
+      delegate_to: localhost
+    - name: argocd | export token
+      ansible.builtin.set_fact:
+        argocd_token: "{{ response.json.token }}"
+
+- name: argocd | get {{ argocd_app }} status
+  ansible.builtin.uri:
+    url: "https://localhost:8080/api/v1/applications/{{ argocd_app }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ argocd_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    return_content: yes
+    validate_certs: no
+  register: argocd_app_status
+  delegate_to: localhost
+
+- name: argocd | sync {{ argocd_app }}
+  ansible.builtin.uri:
+    url: "https://localhost:8080/api/v1/applications/{{ argocd_app }}/sync"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ argocd_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      dryRun: false
+    return_content: yes
+    validate_certs: no
+  delegate_to: localhost
+  when: argocd_app_status.json.status.health.status != "Healthy"
+
+- name: argocd | wait until {{ argocd_app }} is synced
+  ansible.builtin.uri:
+    url: "https://localhost:8080/api/v1/applications/{{ argocd_app }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ argocd_token }}"
+      Content-Type: "application/json"
+    body_format: json
+    return_content: yes
+    validate_certs: no
+  register: argocd_app_wait
+  delegate_to: localhost
+  until: argocd_app_wait.json.status.health.status == "Healthy"
+  retries: 100
+  delay: 5

@@ -72,6 +72,8 @@ in the right order manually:
    [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) to manage the
    rest of the applications. This playbook requires `kubectl proxy` be
    running in the background.
+1. `mid_level_apps.yml`, which makes sure ArgoCD is managing all other
+   applications, including pivoting over cilium to be ArgoCD-managed.
 
 The playbooks can be executed by running
 
