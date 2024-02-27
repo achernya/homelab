@@ -1,0 +1,48 @@
+- name: Obtain ceph resources
+  block:
+    - name: Download rook-ceph create-external-cluster-resources.py
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/rook/rook/v1.13.3/deploy/examples/create-external-cluster-resources.py
+        dest: /tmp/create-external-cluster-resources.py
+        mode: '0664'
+      delegate_to: "{{ groups['hypervisors'][0] }}"
+    - name: Run create-external-cluster-resources.py
+      ansible.builtin.command:
+        argv:
+          - python3
+          - /tmp/create-external-cluster-resources.py
+          - --rbd-data-pool-name=ssdpool
+          - --cephfs-data-pool-name=cephfs_data_ec
+          - --format=bash
+          - --output=export.sh
+        creates: export.sh
+      delegate_to: "{{ groups['hypervisors'][0] }}"
+    - name: Fetch variables
+      ansible.builtin.fetch:
+        src: /tmp/export.sh
+        dest: /tmp/export.sh
+        flat: true
+      delegate_to: "{{ groups['hypervisors'][0] }}"
+
+- name: Import ceph resources
+  block:
+    - name: Download rook-ceph import-external-cluster.sh
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/rook/rook/v1.13.3/deploy/examples/import-external-cluster.sh
+        dest: /tmp/import-external-cluster.sh
+        mode: '0664'
+      delegate_to: localhost
+    - name: Run import-external-cluster.sh
+      ansible.builtin.shell: |
+        . /tmp/export.sh
+        . /tmp/import-external-cluster.sh
+        touch /tmp/ceph-imported
+      args:
+        executable: /bin/bash
+      delegate_to: localhost
+
+- name: Sync storage-cluster
+  include_role:
+    name: argocd-ensure-sync
+  vars:
+    argocd_app: storage-cluster

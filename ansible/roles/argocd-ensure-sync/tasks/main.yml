@@ -46,7 +46,7 @@
     return_content: yes
     validate_certs: no
   delegate_to: localhost
-  when: argocd_app_status.json.status.health.status != "Healthy"
+  when: argocd_app_status.json.status.sync.status != "Synced"
 
 - name: argocd | wait until {{ argocd_app }} is synced
   ansible.builtin.uri:
@@ -60,6 +60,6 @@
     validate_certs: no
   register: argocd_app_wait
   delegate_to: localhost
-  until: argocd_app_wait.json.status.health.status == "Healthy"
+  until: argocd_app_wait.json.status.sync.status == "Synced"
   retries: 100
   delay: 5
