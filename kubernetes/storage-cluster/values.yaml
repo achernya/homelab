@@ -1,0 +1,24 @@
+rook-ceph-cluster:
+  # Based off of https://github.com/rook/rook/blob/v1.13.3/deploy/charts/rook-ceph-cluster/values-external.yaml
+  operatorNamespace: "rook-ceph"
+
+  # All values below are taken from the CephCluster CRD
+  # -- Cluster configuration.
+  cephClusterSpec:
+    external:
+      enable: true
+    crashCollector:
+      disable: true
+    healthCheck:
+      daemonHealth:
+        mon:
+          disabled: false
+          interval: 45s
+  # -- A list of CephBlockPool configurations to deploy
+  cephBlockPools: {}
+
+  # -- A list of CephFileSystem configurations to deploy
+  cephFileSystems: {}
+
+  # -- A list of CephObjectStore configurations to deploy
+  cephObjectStores: {}
