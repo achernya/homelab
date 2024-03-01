@@ -13,7 +13,7 @@
           - /tmp/create-external-cluster-resources.py
           - --rbd-data-pool-name=ssdpool
           - --cephfs-data-pool-name=cephfs_data_ec
-          - --rgw-endpoint=10.255.255.10:7480
+          - "--rgw-endpoint={{ hostvars[groups['hypervisors'][0]]['internal_address'] }}:7480"
           - --format=bash
           - --output=export.sh
         creates: export.sh

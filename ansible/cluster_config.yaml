@@ -3,18 +3,22 @@ vm_hosts:
     ansible_connection: ssh
     ansible_user: root
     ansible_host: 192.168.1.206
+    internal_address: 10.255.255.10
   parallax-2:
     ansible_connection: ssh
     ansible_user: root
     ansible_host: 192.168.1.100
+    internal_address: 10.255.255.11
   parallax-3:
     ansible_connection: ssh
     ansible_user: root
     ansible_host: 192.168.1.205
+    internal_address: 10.255.255.12
   parallax-4:
     ansible_connection: ssh
     ansible_user: root
     ansible_host: 192.168.1.101
+    internal_address: 10.255.255.13
 # Number of kubemasters to be provisioned. The kubemasters run the
 # kubernetes API, scheduler, and etcd. As a result, there should
 # ideally be an odd number of these to avoid split-brain. Going beyond
@@ -32,5 +36,10 @@ kubelets: 8
 # of the first (and hopefully, only) kubemaster is used directly.
 api_mode: 'stacked'
 haproxies: 2
+# Subnet that the VMs are provisioned on. By convention, the
+# kubemasters will be in the .10s, and the kubelets will start in the
+# .30s. That means the maximum number of kubelets is 224. 
 vm_subnet: 192.168.3.0/24
+# Internal subnet where the hypervisors are reachable. The hypervisors
+# should have an internal address configured in the section above.
 internal_subnet: 10.255.0.0/16
