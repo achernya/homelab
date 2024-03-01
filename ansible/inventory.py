@@ -8,6 +8,8 @@
 # or
 #   $ ./inventory.py --list | jq
 
+from typing import List
+
 import argparse
 import ipaddress
 import itertools
@@ -23,37 +25,44 @@ except ImportError:
     from yaml import Loader
 
 
+API_DIRECT = "direct"
+
+VM_BASE = 1000
+
+FIRST_KUBEMASTER = 11
+FIRST_HAPROXY = 21
+FIRST_KUBELET = 31
+
+
 def all_hypervisors(config):
     return set(config["vm_hosts"].keys())
 
 
 def all_kubemasters(config):
-    return set(
-        ["kubemaster-{:02d}".format(x + 1) for x in range(config["kubemasters"])]
-    )
+    return set([f"kubemaster-{x+1:02d}" for x in range(config["kubemasters"])])
 
 
 def all_kubelets(config):
-    return set(["kubelet-{:02d}".format(x + 1) for x in range(config["kubelets"])])
+    return set([f"kubelet-{x+1:02d}" for x in range(config["kubelets"])])
 
 
 def all_haproxies(config):
     if config["api_mode"] != "dedicated-vm":
         return set()
-    return set(["haproxy-{:02d}".format(x + 1) for x in range(config["haproxies"])])
+    return set([f"haproxy-{x+1:02d}" for x in range(config["haproxies"])])
 
 
 def k8s_api_vip(config):
     subnet = ipaddress.ip_network(config["vm_subnet"])
-    if config["api_mode"] == "direct":
+    if config["api_mode"] == API_DIRECT:
         # Return the IP of the first kubemaster
-        return subnet.network_address + 11
+        return subnet.network_address + FIRST_KUBEMASTER
     # stacked or dedicated-vm, use a VIP
     return subnet.network_address + 20
 
 
 def k8s_api_port(config):
-    if config["api_mode"] == "direct":
+    if config["api_mode"] == API_DIRECT:
         return 6443
     return 8443
 
@@ -66,69 +75,41 @@ def k8s_api_vars(config):
     }
 
 
-def vmvars(config):
+def makevms(vm_names: List[str], hypervisors, subnet, internal_subnet, offset):
+    count = 0
     vms = []
+    for vm, host in zip(vm_names, itertools.cycle(hypervisors)):
+        vms.append(
+            {
+                "name": vm,
+                "host": host,
+                "vm_id": VM_BASE + offset + count,
+                "ip": str(subnet.network_address + offset + count),
+                "internal_ip": str(internal_subnet.network_address + offset + count),
+            }
+        )
+        count += 1
+    return vms
 
+
+def vmvars(config):
     subnet = ipaddress.ip_network(config["vm_subnet"])
     internal_subnet = ipaddress.ip_network(config["internal_subnet"])
 
-    base_vm_id = 1011
-    base_network_addr = subnet.network_address + 11
-    base_internal_network_addr = internal_subnet.network_address + 11
     hypervisors = sorted(all_hypervisors(config))
-
     kubemasters = sorted(all_kubemasters(config))
-    for vm, host in zip(kubemasters, itertools.cycle(hypervisors)):
-        vms.append(
-            {
-                "name": vm,
-                "host": host,
-                "vm_id": base_vm_id,
-                "ip": str(base_network_addr),
-                "internal_ip": str(base_internal_network_addr),
-            }
-        )
-        base_vm_id += 1
-        base_network_addr += 1
-        base_internal_network_addr += 1
-
-    base_vm_id = 1021
-    base_network_addr = subnet.network_address + 21
-    base_internal_network_addr = internal_subnet.network_address + 21
     haproxies = sorted(all_haproxies(config))
-    for vm, host in zip(haproxies, itertools.cycle(hypervisors)):
-        vms.append(
-            {
-                "name": vm,
-                "host": host,
-                "vm_id": base_vm_id,
-                "ip": str(base_network_addr),
-                "internal_ip": str(base_internal_network_addr),
-            }
-        )
-        base_vm_id += 1
-        base_network_addr += 1
-        base_internal_network_addr += 1
-
-    base_vm_id = 1031
-    base_network_addr = subnet.network_address + 31
-    base_internal_network_addr = internal_subnet.network_address + 31
     kubelets = sorted(all_kubelets(config))
-    for vm, host in zip(kubelets, itertools.cycle(hypervisors)):
-        vms.append(
-            {
-                "name": vm,
-                "host": host,
-                "vm_id": base_vm_id,
-                "ip": str(base_network_addr),
-                "internal_ip": str(base_internal_network_addr),
-            }
-        )
-        base_vm_id += 1
-        base_network_addr += 1
-        base_internal_network_addr += 1
+    vms = itertools.chain.from_iterable(
+        makevms(x[0], hypervisors, subnet, internal_subnet, x[1])
+        for x in [
+            (kubemasters, FIRST_KUBEMASTER),
+            (haproxies, FIRST_HAPROXY),
+            (kubelets, FIRST_KUBELET),
+        ]
+    )
 
-    return vms
+    return list(vms)
 
 
 def hostvars(args, config, hosts=None):
