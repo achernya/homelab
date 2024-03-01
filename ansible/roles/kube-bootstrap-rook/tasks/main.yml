@@ -13,13 +13,14 @@
           - /tmp/create-external-cluster-resources.py
           - --rbd-data-pool-name=ssdpool
           - --cephfs-data-pool-name=cephfs_data_ec
+          - --rgw-endpoint=10.255.255.10:7480
           - --format=bash
           - --output=export.sh
         creates: export.sh
       delegate_to: "{{ groups['hypervisors'][0] }}"
     - name: Fetch variables
       ansible.builtin.fetch:
-        src: /tmp/export.sh
+        src: export.sh
         dest: /tmp/export.sh
         flat: true
       delegate_to: "{{ groups['hypervisors'][0] }}"
@@ -40,6 +41,8 @@
       args:
         executable: /bin/bash
       delegate_to: localhost
+      register: import_result
+    - debug: msg={{import_result.stdout.split('\n')}}
 
 - name: Sync storage-cluster
   include_role:
