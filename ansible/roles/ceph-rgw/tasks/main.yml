@@ -1,0 +1,75 @@
+- name: Install radosgw
+  ansible.builtin.apt:
+    name: radosgw
+    install_recommends: false
+
+- name: Check if keyring already exists
+  ansible.builtin.stat:
+    path: /etc/pve/priv/ceph.client.radosgw.gateway.keyring
+  register: keyring_data
+    
+- name: Create ceph credentials
+  block:
+    - name: Create Keyring
+      ansible.builtin.command:
+        argv:
+          - ceph-authtool
+          - --create-keyring
+          - /etc/pve/priv/ceph.client.radosgw.gateway.keyring
+    - name: Generate keys
+      ansible.builtin.command:
+        argv:
+          - ceph-authtool
+          - /etc/pve/priv/ceph.client.radosgw.gateway.keyring
+          - -n
+          - client.radosgw.gateway
+          - --gen-key
+
+    - name: Add capabilities to keyring
+      ansible.builtin.command:
+        argv:
+          - ceph-authtool
+          - -n
+          - client.radosgw.gateway
+          - --cap
+          - osd
+          - 'allow rwx'
+          - --cap
+          - mon
+          - 'allow rwx'
+          - /etc/pve/priv/ceph.client.radosgw.gateway.keyring
+    - name: Add key to storage cluster
+      ansible.builtin.command:
+        argv:
+          - ceph
+          - -k
+          - /etc/pve/priv/ceph.client.admin.keyring
+          - auth
+          - add
+          - client.radosgw.gateway
+          - -i
+          - /etc/pve/priv/ceph.client.radosgw.gateway.keyring
+  when: not keyring_data.stat.exists
+  run_once: true
+
+- name: Update ceph.conf
+  community.general.ini_file:
+    path: /etc/ceph/ceph.conf
+    section: client.radosgw.gateway
+    option: 'log file'
+    value: /var/log/ceph/radosgw.gateway.log
+    state: present
+    follow: true
+  run_once: true
+
+- name: Enable radosgw
+  ansible.builtin.systemd:
+    name: ceph-radosgw@radosgw.gateway
+    enabled: yes
+    masked: no
+
+- name: Start qemu-guest-agent
+  ansible.builtin.systemd:
+    name: ceph-radosgw@radosgw.gateway
+    state: started
+
