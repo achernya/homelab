@@ -16,6 +16,7 @@ loki:
   monitoring:
     serviceMonitor:
       enabled: true
+      labels: {"release": "monitoring"}
     selfMonitoring:
       enabled: false
       grafanaAgent:
@@ -54,3 +55,4 @@ loki:
 promtail:
   serviceMonitor:
     enabled: true
+    labels: {"release": "monitoring"}
