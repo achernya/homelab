@@ -1,0 +1,56 @@
+loki:
+  # Start off without auth, we'll enable this later.
+  loki:
+    auth_enabled: false
+    storage:
+      type: s3
+      bucketNames:
+        chunks: "${BUCKET_NAME}"
+        ruler: "${BUCKET_NAME}"
+        admin: "${BUCKET_NAME}"
+      s3:
+        endpoint: "http://${BUCKET_HOST}:${BUCKET_PORT}/"
+        secretAccessKey: "${AWS_SECRET_ACCESS_KEY}"
+        accessKeyId: "${AWS_ACCESS_KEY_ID}"
+        s3ForcePathStyle: true
+  monitoring:
+    serviceMonitor:
+      enabled: true
+    selfMonitoring:
+      enabled: false
+      grafanaAgent:
+        installOperator: false
+  write:
+    extraEnvFrom:
+      - configMapRef:
+          name: loki-bucket
+      - secretRef:
+          name: loki-bucket
+    extraArgs:
+      - -config.expand-env=true
+    persistence:
+      storageClass: ceph-rbd
+  read:
+    extraEnvFrom:
+      - configMapRef:
+          name: loki-bucket
+      - secretRef:
+          name: loki-bucket
+    extraArgs:
+      - -config.expand-env=true
+  backend:
+    extraEnvFrom:
+      - configMapRef:
+          name: loki-bucket
+      - secretRef:
+          name: loki-bucket
+    extraArgs:
+      - -config.expand-env=true
+    persistence:
+      storageClass: ceph-rbd
+  test:
+    # Disabled beacuse selfMonitoring is disabled
+    enabled: false
+promtail:
+  serviceMonitor:
+    enabled: true
