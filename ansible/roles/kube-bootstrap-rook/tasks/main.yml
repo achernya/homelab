@@ -49,3 +49,37 @@
     name: argocd-ensure-sync
   vars:
     argocd_app: storage-cluster
+
+- name: Create CephObjectStore
+  kubernetes.core.k8s:
+    host: 'http://127.0.0.1:8001'
+    state: present
+    definition:
+      apiVersion: ceph.rook.io/v1
+      kind: CephObjectStore
+      metadata:
+        name: default
+        namespace: rook-ceph-external
+      spec:
+        gateway:
+          port: 7480
+          externalRgwEndpoints:
+            - ip: "{{ hostvars[groups['hypervisors'][0]]['internal_address'] }}"
+  delegate_to: localhost
+
+- name: Create bucket storage class
+  kubernetes.core.k8s:
+    host: 'http://127.0.0.1:8001'
+    state: present
+    definition:
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: ceph-bucket
+      # Must contain the namespace where the cluster is provisioned
+      provisioner: rook-ceph-external.ceph.rook.io/bucket
+      reclaimPolicy: Delete
+      parameters:
+        objectStoreName: default
+        objectStoreNamespace: rook-ceph-external
+  delegate_to: localhost

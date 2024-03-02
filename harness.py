@@ -61,6 +61,13 @@ def argocd_portfwd(*args, **kwargs) -> Generator[None, None, None]:
         yield kubectl
 
 
+@contextlib.contextmanager
+def kubectl_and_argocd(*args, **kwargs) -> Generator[None, None, None]:
+    with kubectl_proxy():
+        with argocd_portfwd():
+            yield
+
+
 @dataclasses.dataclass
 class Step:
     playbook: str
@@ -82,7 +89,7 @@ STEPS = [
     Step(
         playbook="mid_level_apps.yml",
         desc="Install mid-level cluster apps",
-        context=argocd_portfwd,
+        context=kubectl_and_argocd,
     ),
 ]
 
