@@ -29,4 +29,13 @@ kube-prometheus-stack:
             resources:
               requests:
                 storage: 50Gi
-  
+  grafana:
+    additionalDataSources:
+      - name: Loki
+        editable: false
+        orgId: 1
+        type: loki
+        uid: loki
+        url: "http://loki-gateway.logging.svc.cluster.local/"
+        version: 1
+
