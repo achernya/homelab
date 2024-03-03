@@ -1,9 +1,9 @@
 dependencies:
 - name: cert-manager
   repository: https://charts.jetstack.io
-  version: v1.11.0
+  version: v1.14.3
 - name: acme-dns
   repository: file://../acme-dns/
   version: 0.1.0
-digest: sha256:a5d008027faf15dd82c5bd2be1e0fa1055a96d6ceb57c6beef147543cf30ef2c
-generated: "2023-02-19T18:46:07.238068627-05:00"
+digest: sha256:2c374339acee9a400cc50a81de7f4841fbe4ccbbfa35d1229485af5b971d0e64
+generated: "2024-03-03T15:34:01.035332948-05:00"

@@ -3,13 +3,13 @@ name: applications
 description: Certificates
 type: application
 # Follows semver, must be updated every time this chart is modified.
-version: 0.0.1
+version: 0.0.2
 # Version of the application, for display. Does not have to follow semver.
 appVersion: "0.0.1"
 
 dependencies:
   - name: cert-manager
-    version: v1.11.0
+    version: v1.14.3
     repository: https://charts.jetstack.io
   - name: acme-dns
     version: 0.1.0
