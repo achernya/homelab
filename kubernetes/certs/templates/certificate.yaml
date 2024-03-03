@@ -1,12 +1,12 @@
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: star-large-format-achernya-com-crt
-spec:
-  secretName: star-large-format-achernya-com-crt-secret
-  dnsNames:
-  - "*.large-format.achernya.com"
-  issuerRef:
-    name: letsencrypt-staging
-    kind: ClusterIssuer
-    group: cert-manager.io
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: star-large-format-achernya-com-crt
+# spec:
+#   secretName: star-large-format-achernya-com-crt-secret
+#   dnsNames:
+#   - "*.large-format.achernya.com"
+#   issuerRef:
+#     name: letsencrypt-staging
+#     kind: ClusterIssuer
+#     group: cert-manager.io
