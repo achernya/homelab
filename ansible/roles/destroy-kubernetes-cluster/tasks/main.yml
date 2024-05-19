@@ -9,7 +9,6 @@
     api_user: "{{ proxmox_api_user }}"
     api_token_id: "{{ proxmox_api_token_id }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
-    proxmox_default_behavior: "no_defaults"
     vmid: "{{ vm.vm_id }}"
     node: "{{ vm.host }}"
     force: true
@@ -25,7 +24,6 @@
     api_user: "{{ proxmox_api_user }}"
     api_token_id: "{{ proxmox_api_token_id }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
-    proxmox_default_behavior: "no_defaults"
     vmid: "{{ vm.vm_id }}"
     node: "{{ vm.host }}"
     state: absent

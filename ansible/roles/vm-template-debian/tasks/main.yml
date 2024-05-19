@@ -19,7 +19,6 @@
     api_user: "{{ proxmox_api_user }}"
     api_token_id: "{{ proxmox_api_token_id }}"
     api_token_secret: "{{ proxmox_api_token_secret }}"
-    proxmox_default_behavior: "no_defaults"
     name: "{{ template_vm_name }}"
     vmid: "{{ template_vmid }}"
     node: "{{ groups['hypervisors'][0] }}"
