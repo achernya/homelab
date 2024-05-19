@@ -7,3 +7,7 @@ traefik:
         enable: true
         additionalLabels:
           release: "monitoring"
+  tlsStore:
+    default:
+      defaultCertificate:
+        secretName: star-voidloaf-com-crt-secret
