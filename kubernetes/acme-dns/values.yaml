@@ -53,7 +53,7 @@ service:
 acmedns:
   # Domain that acme-dns will be serving from. All records it creates
   # will be subdomains within this domain. No trailing dot.
-  domain: "acme.achernya.com"
+  domain: "acme.voidloaf.com"
   # Email of the administrator, for use in DNS records.
   adminEmail: "nsadmin@achernya.com"
   # Location of `domain`. Should be either A/AAAA followed by an IP
