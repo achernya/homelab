@@ -9,7 +9,7 @@ spec:
   generators:
     - merge:
         mergeKeys:
-          - path
+          - values.name
         generators:
           # Get every application in the `kubernetes` directory, so it
           # can be automatically enforced.
@@ -29,14 +29,14 @@ spec:
               elements:
                 # `argocd` customizations should be installed before
                 # other packages get synced.
-                - path: "kubernetes/argocd"
-                  values:
+                - values:
+                    name: "argocd"
                     syncWave: "-9000"
                 # `cilium` is installed in the `kube-system`
                 # namespace, not the default namespace that matches
                 # the directory name.
-                - path: "kubernetes/cilium"
-                  values:
+                - values:
+                    name: "cilium"
                     namespace: kube-system
   template:
     metadata:
