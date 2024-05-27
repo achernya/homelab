@@ -1,8 +1,8 @@
-- name: Sync app-of-apps
+- name: Sync argocd
   include_role:
     name: argocd-ensure-sync
   vars:
-    argocd_app: meta
+    argocd_app: argocd
 
 - name: Sync cilium
   include_role:

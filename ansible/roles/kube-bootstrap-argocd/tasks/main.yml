@@ -85,27 +85,10 @@
   kubernetes.core.k8s:
     host: 'http://127.0.0.1:8001'
     state: present
-    definition:
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: meta
-        namespace: argocd
-      spec:
-        project: default
-        source:
-          repoURL: "https://{{ github_url }}"
-          targetRevision: HEAD
-          path: kubernetes/meta/
-        destination:
-          server: https://kubernetes.default.svc
-          namespace: homelab-meta
-        syncPolicy:
-          syncOptions:
-            - CreateNamespace=true
-          automated:
-            selfHeal: true
-            prune: true
+    template:
+      path: 'applicationset.yaml.j2'
+      variable_start_string: '[['
+      variable_end_string: ']]'
   delegate_to: localhost
 
 - name: Wait for argocd to initialize

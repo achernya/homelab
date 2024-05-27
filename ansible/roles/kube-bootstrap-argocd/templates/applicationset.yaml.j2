@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-git
+  namespace: argocd
+spec:
+  goTemplate: false
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - merge:
+        mergeKeys:
+          - path
+        generators:
+          # Get every application in the `kubernetes` directory, so it
+          # can be automatically enforced.
+          - git:
+              repoURL: "https://[[ github_url ]]"
+              revision: HEAD
+              directories:
+                - path: kubernetes/*
+              values:
+                name: "{{path.basenameNormalized}}"
+                namespace: "{{path.basenameNormalized}}"
+                syncWave: "0"
+          # Per-directory overrides
+          - list:
+              elements:
+                # `argocd` customizations should be installed before
+                # other packages get synced.
+                - path: "kubernetes/argocd"
+                  values:
+                    syncWave: "-9000"
+                # `cilium` is installed in the `kube-system`
+                # namespace, not the default namespace that matches
+                # the directory name.
+                - path: "kubernetes/cilium"
+                  values:
+                    namespace: kube-system
+  template:
+    metadata:
+      name: "{{values.name}}"
+      annotations:
+        # This may not actually work? See
+        # https://github.com/argoproj/applicationset/issues/221.
+        argocd.argoproj.io/sync-wave: "{{values.syncWave}}"
+    spec:
+      project: default
+      source:
+        repoURL: "https://[[ github_url ]]"
+        targetRevision: HEAD
+        path: "{{path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{values.namespace}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+        automated:
+          selfHeal: true
+          prune: true

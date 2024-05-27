@@ -44,11 +44,11 @@
       register: import_result
     - debug: msg={{import_result.stdout.split('\n')}}
 
-- name: Sync storage-cluster
+- name: Sync rook-ceph-external
   include_role:
     name: argocd-ensure-sync
   vars:
-    argocd_app: storage-cluster
+    argocd_app: rook-ceph-external
 
 - name: Create CephObjectStore
   kubernetes.core.k8s:
