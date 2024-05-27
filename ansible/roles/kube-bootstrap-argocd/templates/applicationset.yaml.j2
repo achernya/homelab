@@ -18,6 +18,8 @@ spec:
               revision: HEAD
               directories:
                 - path: kubernetes/*
+                - path: kubernetes/acme-dns
+                  exclude: true
               values:
                 name: "{{path.basenameNormalized}}"
                 namespace: "{{path.basenameNormalized}}"
