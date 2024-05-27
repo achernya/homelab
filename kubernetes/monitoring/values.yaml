@@ -1,4 +1,8 @@
 kube-prometheus-stack:
+  # Disable installing CRDs; they need to be installed earlier and
+  # separately.
+  crds:
+    enabled: false
   # Disable kubeproxy monitoring, since cilium is deployed with
   # kubeproxy-free mode.
   kubeProxy:
