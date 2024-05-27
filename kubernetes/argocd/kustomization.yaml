@@ -3,3 +3,4 @@ kind: Kustomization
 namespace: argocd
 resources:
 - argocd-cm.yaml
+- monitoring-crds.yaml
