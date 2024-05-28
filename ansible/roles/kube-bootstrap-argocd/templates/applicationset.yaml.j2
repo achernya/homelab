@@ -10,8 +10,10 @@ spec:
     - merge:
         mergeKeys:
           - values.name
+          - values.destination
         generators:
-          # Cross-product all registered clusters with all registered applications
+          # Cross-product all registered clusters with all registered
+          # applications
           - matrix:
               generators:
                 # Select only clusters that are not the special
@@ -20,6 +22,8 @@ spec:
                     selector:
                       matchLabels:
                         argocd.argoproj.io/secret-type: cluster
+                    values:
+                      destination: "{{name}}"
                 # Get every application in the `kubernetes` directory, so it
                 # can be automatically enforced.
                 - git:
@@ -44,26 +48,35 @@ spec:
                 destination: "{{path[3]}}"
                 name: "{{path[1]}}"
           # Per-directory overrides. These override even the
-          # per-cluster customizations.
-          - list:
-              elements:
-                # `argocd` customizations should be installed before
-                # other packages get synced.
-                - values:
-                    name: "argocd"
-                    syncWave: "-9000"
-                # `cilium` is installed in the `kube-system`
-                # namespace, not the default namespace that matches
-                # the directory name.
-                - values:
-                    name: "cilium"
-                    namespace: kube-system
-                # `certs-issuers` is a set of configs for
-                # cert-manager, which is installed in the `certs`
-                # namespace.
-                - values:
-                    name: "certs-issuers"
-                    namespace: certs
+          # per-cluster customizations. These also need to be matrix'd
+          # with the cluster generator for the merge keys to work.
+          - matrix:
+              generators:
+                - clusters:
+                    selector:
+                      matchLabels:
+                        argocd.argoproj.io/secret-type: cluster
+                    values:
+                      destination: "{{name}}"
+                - list:
+                    elements:
+                      # `argocd` customizations should be installed
+                      # before other packages get synced.
+                      - values:
+                          name: "argocd"
+                          syncWave: "-9000"
+                      # `cilium` is installed in the `kube-system`
+                      # namespace, not the default namespace that
+                      # matches the directory name.
+                      - values:
+                          name: "cilium"
+                          namespace: kube-system
+                      # `certs-issuers` is a set of configs for
+                      # cert-manager, which is installed in the
+                      # `certs` namespace.
+                      - values:
+                          name: "certs-issuers"
+                          namespace: certs
   template:
     metadata:
       name: "{{values.name}}"
