@@ -11,20 +11,40 @@ spec:
         mergeKeys:
           - values.name
         generators:
-          # Get every application in the `kubernetes` directory, so it
-          # can be automatically enforced.
+          # Cross-product all registered clusters with all registered applications
+          - matrix:
+              generators:
+                # Select only clusters that are not the special
+                # `in-cluster` object.
+                - clusters:
+                    selector:
+                      matchLabels:
+                        argocd.argoproj.io/secret-type: cluster
+                # Get every application in the `kubernetes` directory, so it
+                # can be automatically enforced.
+                - git:
+                    repoURL: "https://[[ github_url ]]"
+                    revision: HEAD
+                    directories:
+                      - path: kubernetes/*
+                      - path: kubernetes/acme-dns
+                        exclude: true
+                    values:
+                      name: "{{path[1]}}"
+                      namespace: "{{path.basenameNormalized}}"
+                      syncWave: "0"
+          # Each app in `kubernetes/*` can have an optional override
+          # for each cluster that takes precedence.
           - git:
               repoURL: "https://[[ github_url ]]"
               revision: HEAD
               directories:
-                - path: kubernetes/*
-                - path: kubernetes/acme-dns
-                  exclude: true
+                - path: kubernetes/*/override/*
               values:
-                name: "{{path.basenameNormalized}}"
-                namespace: "{{path.basenameNormalized}}"
-                syncWave: "0"
-          # Per-directory overrides
+                destination: "{{path[3]}}"
+                name: "{{path[1]}}"
+          # Per-directory overrides. These override even the
+          # per-cluster customizations.
           - list:
               elements:
                 # `argocd` customizations should be installed before
@@ -38,6 +58,12 @@ spec:
                 - values:
                     name: "cilium"
                     namespace: kube-system
+                # `certs-issuers` is a set of configs for
+                # cert-manager, which is installed in the `certs`
+                # namespace.
+                - values:
+                    name: "certs-issuers"
+                    namespace: certs
   template:
     metadata:
       name: "{{values.name}}"
@@ -52,7 +78,7 @@ spec:
         targetRevision: HEAD
         path: "{{path}}"
       destination:
-        server: https://kubernetes.default.svc
+        server: "{{server}}"
         namespace: "{{values.namespace}}"
       syncPolicy:
         syncOptions:
