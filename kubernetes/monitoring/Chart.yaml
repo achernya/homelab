@@ -3,11 +3,11 @@ name: applications
 description: Monitoring
 type: application
 # Follows semver, must be updated every time this chart is modified.
-version: 0.0.3
+version: 0.0.4
 # Version of the application, for display. Does not have to follow semver.
 appVersion: "0.0.1"
 
 dependencies:
   - name: kube-prometheus-stack
-    version: 56.0.3
+    version: 59.1.0
     repository: https://prometheus-community.github.io/helm-charts
