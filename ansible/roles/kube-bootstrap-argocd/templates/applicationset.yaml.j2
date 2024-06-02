@@ -77,6 +77,13 @@ spec:
                       - values:
                           name: "certs-issuers"
                           namespace: certs
+                      # `monitoring-crds` needs to be installed ahead
+                      # of `monitoring`, but live in the same
+                      # namespace.
+                      - values:
+                          name: "monitoring-crds"
+                          namespace: monitoring
+                          syncWave: "-8900"
   template:
     metadata:
       name: "{{values.name}}"

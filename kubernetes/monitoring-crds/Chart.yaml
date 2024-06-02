@@ -1,0 +1,13 @@
+apiVersion: v2
+name: applications
+description: Monitoring CRDS
+type: application
+# Follows semver, must be updated every time this chart is modified.
+version: 0.0.1
+# Version of the application, for display. Does not have to follow semver.
+appVersion: "0.0.1"
+
+dependencies:
+  - name: prometheus-operator-crds
+    version: 9.0.1
+    repository: https://prometheus-community.github.io/helm-charts
