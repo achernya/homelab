@@ -37,6 +37,7 @@ spec:
                       name: "{{path[1]}}"
                       namespace: "{{path.basenameNormalized}}"
                       syncWave: "0"
+                      syncOptionsReplace: "false"
           # Each app in `kubernetes/*` can have an optional override
           # for each cluster that takes precedence.
           - git:
@@ -84,6 +85,7 @@ spec:
                           name: "monitoring-crds"
                           namespace: monitoring
                           syncWave: "-8900"
+                          syncOptionsReplace: "true"
   template:
     metadata:
       name: "{{values.name}}"
@@ -103,6 +105,7 @@ spec:
       syncPolicy:
         syncOptions:
           - CreateNamespace=true
+          - Replace={{values.syncOptionsReplace}}
         automated:
           selfHeal: true
           prune: true
