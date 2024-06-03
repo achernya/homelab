@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: "cluster-{{ cluster_name }}"
+  namespace: argocd
+  annotations:
+    managed-by: argocd.argoproj.io
+  labels:
+    argocd.argoproj.io/secret-type: cluster
+type: Opaque
+data:
+  config: "{{ creds | to_json | b64encode }}"
+  name: "{{ cluster_name | b64encode }}"
+  server: "{{ ('https://' + k8s_api_vip + ':' ~ k8s_api_port) | b64encode }}"

@@ -1,0 +1,8 @@
+{
+  "tlsClientConfig": {
+    "insecure": false,
+    "certData": "{{ kubectl_data.stdout | from_json | community.general.json_query('users[0].user."client-certificate-data"') }}",
+    "keyData": "{{ kubectl_data.stdout | from_json | community.general.json_query('users[0].user."client-key-data"') }}",
+    "caData": "{{ kubectl_data.stdout | from_json | community.general.json_query('clusters[0].cluster."certificate-authority-data"') }}"
+  }
+}

@@ -81,7 +81,7 @@
       delegate_to: localhost
       when: github_pat is defined
 
-- name: Add app-of-apps
+- name: Add ApplicationSet
   kubernetes.core.k8s:
     host: 'http://127.0.0.1:8001'
     state: present
@@ -102,3 +102,21 @@
     wait_sleep: 5
     wait_timeout: 120
   delegate_to: localhost
+
+- name: Add this cluster to ArgoCD by name
+  block:
+    - name: Fetch credentials from kubectl
+      ansible.builtin.command:
+        cmd: kubectl config view --minify --raw -o json --flatten
+      register: kubectl_data
+      delegate_to: localhost
+    - name: Render cluster config data
+      ansible.builtin.set_fact:
+        creds: "{{ lookup('template', 'cluster_config.json.j2') }}"
+    - name: Apply cluster config
+      kubernetes.core.k8s:
+        host: 'http://127.0.0.1:8001'
+        state: present
+        template:
+          path: 'cluster.yaml.j2'
+      delegate_to: localhost

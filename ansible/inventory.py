@@ -72,6 +72,7 @@ def k8s_api_vars(config):
         "k8s_api_mode": config["api_mode"],
         "k8s_api_port": k8s_api_port(config),
         "k8s_api_vip": str(k8s_api_vip(config)),
+        "cluster_name": config["cluster_name"],
     }
 
 

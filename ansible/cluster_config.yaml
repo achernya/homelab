@@ -19,6 +19,9 @@ vm_hosts:
     ansible_user: root
     ansible_host: 192.168.1.101
     internal_address: 10.255.255.13
+# Name of the cluster. Used to identify which per-cluster overrides
+# should be applied.
+cluster_name: 'parallax'
 # Number of kubemasters to be provisioned. The kubemasters run the
 # kubernetes API, scheduler, and etcd. As a result, there should
 # ideally be an odd number of these to avoid split-brain. Going beyond
