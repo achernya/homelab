@@ -53,12 +53,12 @@ service:
 acmedns:
   # Domain that acme-dns will be serving from. All records it creates
   # will be subdomains within this domain. No trailing dot.
-  domain: "acme.voidloaf.com"
+  domain: "example.com"
   # Email of the administrator, for use in DNS records.
-  adminEmail: "nsadmin@achernya.com"
+  adminEmail: "nsadmin@example.com"
   # Location of `domain`. Should be either A/AAAA followed by an IP
   # address or CNAME followed by a name.
-  domainHostedAt: "CNAME large-format.achernya.com."
+  domainHostedAt: "CNAME nameserver.example.com."
 
 autoscaling:
   enabled: false
