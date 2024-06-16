@@ -3,11 +3,11 @@ name: cilium
 description: Cilium CNI
 type: application
 # Follows semver, must be updated every time this chart is modified.
-version: 0.0.2
+version: 0.0.3
 # Version of the application, for display. Does not have to follow semver.
 appVersion: "0.0.1"
 
 dependencies:
   - name: cilium
-    version: 1.14.5
+    version: 1.15.6
     repository: https://helm.cilium.io/
