@@ -1,16 +1,14 @@
 apiVersion: v2
 name: certs
-description: Certificates
+description: Certificates customized for cluster Parallax
 type: application
 # Follows semver, must be updated every time this chart is modified.
-version: 0.0.3
+version: 0.0.2
 # Version of the application, for display. Does not have to follow semver.
 appVersion: "0.0.1"
 
 dependencies:
-  - name: cert-manager
-    version: v1.14.3
-    repository: https://charts.jetstack.io
-  - name: acme-dns
-    version: ~0.1.0
-    repository: file://../acme-dns/
+  - name: certs
+    version: ~0.0.1
+    repository: file://../../
+    alias: base
