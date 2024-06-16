@@ -3,8 +3,8 @@
   block:
     - name: Download cilium
       ansible.builtin.get_url:
-        url: https://github.com/cilium/cilium-cli/releases/download/v0.15.20/cilium-linux-amd64.tar.gz
-        checksum: "sha256:a1a09f3f0176e118b1b00be4fcd7f9f32f27c9587c64b5579d2747d751e72e23"
+        url: https://github.com/cilium/cilium-cli/releases/download/v0.16.10/cilium-linux-amd64.tar.gz
+        checksum: "sha256:aeb9d7c56108283a9fb9b370ec36b33f28f3126f6c4e6b4176a15cc6b2d3fc70"
         dest: "/root/cilium-linux-amd64.tar.gz"
     - name: Extract cilium
       ansible.builtin.unarchive:
