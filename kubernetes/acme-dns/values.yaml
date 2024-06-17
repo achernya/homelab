@@ -53,7 +53,10 @@ service:
 acmedns:
   # Domain that acme-dns will be serving from. All records it creates
   # will be subdomains within this domain. No trailing dot.
-  domain: "example.com"
+  domain: "acme.example.com"
+  # Domain that the registered account should be created for. No
+  # trailing dot.xo
+  accountFor: "example.com"
   # Email of the administrator, for use in DNS records.
   adminEmail: "nsadmin@example.com"
   # Location of `domain`. Should be either A/AAAA followed by an IP

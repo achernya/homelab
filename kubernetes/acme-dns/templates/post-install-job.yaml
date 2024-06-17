@@ -37,5 +37,5 @@ spec:
         args:
           - |
             sleep 10;
-            curl -X POST http://{{ include "acme-dns.fullname" . }}-api.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.api.port }}/register | /app/secret-writer -namespace={{ .Release.Namespace }} -secret-name=acme-dns-creds -secret-key=acmedns.json
+            curl -X POST http://{{ include "acme-dns.fullname" . }}-api.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.api.port }}/register | jq '{"{{ .Values.acmedns.accountFor }}": .}' | /app/secret-writer -namespace={{ .Release.Namespace }} -secret-name=acme-dns-creds -secret-key=acmedns.json
 

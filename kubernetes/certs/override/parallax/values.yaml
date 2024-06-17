@@ -2,5 +2,6 @@ base:
   acme-dns:
     acmedns:
       domain: "acme.voidloaf.com"
+      accountFor: "voidloaf.com"
       adminEmail: "nsadmin@achernya.com"
       domainHostedAt: "CNAME large-format.achernya.com."

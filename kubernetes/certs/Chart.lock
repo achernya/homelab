@@ -4,6 +4,6 @@ dependencies:
   version: v1.14.3
 - name: acme-dns
   repository: file://../acme-dns/
-  version: 0.1.0
-digest: sha256:6f5bda2175f832757ebb5fad3e60aa7fe9aded6af041a973b72ea2d95dbf4cf8
-generated: "2024-06-16T09:24:10.637155044-04:00"
+  version: 0.1.1
+digest: sha256:5afd61364e7983b59551f46cee0ef86547f62358542babdda0eddd22dfcdfa01
+generated: "2024-06-16T21:48:13.11592081-04:00"
