@@ -1,0 +1,6 @@
+base:
+  traefik:
+    tlsStore:
+      default:
+        defaultCertificate:
+          secretName: star-voidloaf-com-crt-secret

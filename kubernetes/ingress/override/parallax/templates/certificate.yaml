@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: star-voidloaf-com-crt
+spec:
+  secretName: star-voidloaf-com-crt-secret
+  dnsNames:
+  - "*.voidloaf.com"
+  issuerRef:
+    name: letsencrypt-staging
+    kind: ClusterIssuer
+    group: cert-manager.io
