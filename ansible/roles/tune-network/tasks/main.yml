@@ -16,4 +16,8 @@
         iface: ens1
         option: mtu
         value: 9000
-  
+    - name: Configure qdisc
+      community.general.interfaces_file:
+        iface: ens1
+        option: pre-up
+        value: tc qdisc replace dev ${IFACE} root fq maxrate 32gbit
