@@ -1,0 +1,19 @@
+- name: Install iperf2 and iperf3
+  ansible.builtin.apt:
+    pkg:
+      - iperf
+      - iperf3
+
+- name: Tune networking
+  block:
+    - name: Configure sysctl
+      ansible.builtin.copy:
+        src: sysctl.conf
+        dest: /etc/sysctl.d/20-network-tuning.conf
+      notify: reload sysctl
+    - name: Configure MTU
+      community.general.interfaces_file:
+        iface: ens1
+        option: mtu
+        value: 9000
+  

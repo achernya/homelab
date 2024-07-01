@@ -52,15 +52,16 @@
   when: not keyring_data.stat.exists
   run_once: true
 
-- name: Update ceph.conf
-  community.general.ini_file:
-    path: /etc/ceph/ceph.conf
-    section: client.radosgw.gateway
-    option: 'log file'
-    value: /var/log/ceph/radosgw.gateway.log
-    state: present
-    follow: true
-  run_once: true
+# This appears to always want to mutate for some reason
+# - name: Update ceph.conf
+#   community.general.ini_file:
+#     path: /etc/ceph/ceph.conf
+#     section: client.radosgw.gateway
+#     option: 'log file'
+#     value: /var/log/ceph/radosgw.gateway.log
+#     state: present
+#     follow: true
+#   run_once: true
 
 - name: Enable radosgw
   ansible.builtin.systemd:
