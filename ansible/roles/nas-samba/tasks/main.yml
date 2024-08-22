@@ -3,6 +3,7 @@
     pkg:
       - samba
       - samba-client
+      - samba-vfs-modules
 
 - name: Install samba config
   ansible.builtin.template:
