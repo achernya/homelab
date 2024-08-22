@@ -1,0 +1,9 @@
+# Allow each user to re-set their own smbpasswd without knowing the
+# password originally. Normally, you need to have a password to
+# authenticate to smbd, but accounts start off with empty
+# passwords. Root can set a password for each user directly, so running
+# `smbpasswd USERNAME` for each user bypasses this restriction.
+
+{% for user in users %}
+{{ user.username }}	ALL=(root) NOPASSWD: /usr/bin/smbpasswd {{ user.username }}
+{% endfor %}

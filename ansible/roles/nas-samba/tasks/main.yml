@@ -5,6 +5,17 @@
       - samba-client
       - samba-vfs-modules
 
+- name: Install sudo
+  ansible.builtin.apt:
+    pkg:
+      - sudo
+
+- name: Install smbpasswd sudoers file
+  ansible.builtin.template:
+    src: smbpasswd.j2
+    dest: /etc/sudoers.d/smbpasswd
+    mode: '0440'
+
 - name: Install samba config
   ansible.builtin.template:
     src: smb.conf.j2
