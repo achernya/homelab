@@ -1,0 +1,75 @@
+# This is the main Samba configuration file. You should read the
+# smb.conf(5) manual page in order to understand the options listed
+# here. Samba has a huge number of configurable options most of which 
+# are not shown in this example
+#======================= Global Settings =======================
+
+[global]
+   workgroup = VOIDLOAF
+
+#### Debugging/Accounting ####
+
+# This tells Samba to use a separate log file for each machine
+# that connects
+   log file = /var/log/samba/log.%m
+
+# Cap the size of the individual log files (in KiB).
+   max log size = 1000
+
+# We want Samba to only log to /var/log/samba/log.{smbd,nmbd}.
+# Append syslog@1 if you want important messages to be sent to syslog too.
+   logging = file
+
+# Do something sensible when Samba crashes: mail the admin a backtrace
+   panic action = /usr/share/samba/panic-action %d
+
+
+####### Authentication #######
+   server role = standalone server
+
+   obey pam restrictions = yes
+
+   unix password sync = no
+
+# This option controls how unsuccessful authentication attempts are mapped
+# to anonymous connections
+   map to guest = bad user
+
+#======================= Share Definitions =======================
+
+[homes]
+   comment = Home Directories
+   browseable = no
+   path = /film/Users/%S
+
+   read only = no
+
+   create mask = 0755
+   directory mask = 0755
+   valid users = %S
+
+{% for share in shares %}
+[{{share}}]
+  comment = {{share}}
+  read only = yes
+  path = /film/{{share}}
+  guest ok = yes
+
+{% endfor %}
+[printers]
+   comment = All Printers
+   browseable = no
+   path = /var/tmp
+   printable = yes
+   guest ok = no
+   read only = yes
+   create mask = 0700
+
+# Windows clients look for this share name as a source of downloadable
+# printer drivers
+[print$]
+   comment = Printer Drivers
+   path = /var/lib/samba/printers
+   browseable = yes
+   read only = yes
+   guest ok = no

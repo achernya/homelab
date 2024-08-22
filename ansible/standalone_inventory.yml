@@ -29,3 +29,8 @@ all:
         uid: 1013
         github: vulpicastor
         gecos: "Lizhou Sha,,,"
+    shares:
+      - Books
+      - Music
+      - Software
+      - Videos

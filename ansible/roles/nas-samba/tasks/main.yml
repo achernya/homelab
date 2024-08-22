@@ -1,0 +1,11 @@
+- name: Install samba packages
+  ansible.builtin.apt:
+    pkg:
+      - samba
+      - samba-client
+
+- name: Install samba config
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+  notify: restart smbd
