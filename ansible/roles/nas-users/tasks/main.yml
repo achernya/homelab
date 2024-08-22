@@ -1,0 +1,17 @@
+- name: Create user accounts
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    uid: "{{ item.uid }}"
+    password_lock: true
+    create_home: false
+    comment: "{{ item.gecos }}"
+    shell: "/bin/bash"
+  loop: "{{ users }}"
+
+- name: Set ssh keys
+  ansible.posix.authorized_key:
+    user: "{{ item.username }}"
+    state: present
+    key: "https://github.com/{{ item.github | default(item.username) }}.keys"
+    manage_dir: true
+  loop: "{{ users }}"

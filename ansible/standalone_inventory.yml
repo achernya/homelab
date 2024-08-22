@@ -17,4 +17,15 @@ all:
       hosts:
         medium-format:
         large-format:
-  
+  vars:
+    users:
+      - username: achernya
+        uid: 1000
+        gecos: "Alex Chernyakhovsky,,,"
+      - username: madars
+        uid: 1008
+        gecos: "Madars Virza,,,"
+      - username: slz
+        uid: 1013
+        github: vulpicastor
+        gecos: "Lizhou Sha,,,"

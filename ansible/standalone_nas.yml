@@ -1,5 +1,6 @@
 - hosts: nas
   roles:
     - zfs-userdirs
+    - nas-users
   vars:
     ansible_python_interpreter: /usr/bin/python3
