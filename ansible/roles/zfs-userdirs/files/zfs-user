@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+# -*- mode: python -*-
+
+# Per `adduser.local(8)`, it's possible to customize the behavior of
+# `adduser(8)`. However, this does not apply to `useradd(8)`, which is
+# the backend program that everything, including
+# `ansible.builtin.user` use to actuate the addition.
+#
+# Instead, `useradd(8)` has an extension point of
+# `/etc/shadow-maint/useradd-post.d/*`, which will work for
+# both. Install this program there to manage the creation of ZFS
+# datasets for users.
+#
+# This program is configured by the file `/etc/zfs-user.toml`, which
+# specifies which datasets to create for the given user. For most
+# setups, a single section with the name of the parent dataset is
+# sufficient. However, you can create multiple datasets for an
+# individual user by adding more sections.
+#
+# For proper operation, `/etc/login.defs` should be configured with
+# `CREATE_HOME no` if `zfs-user` will be used to manage the same
+# directory structure that `HOME` points to.
+#
+# Since `zfs-user` can create multiple datasets, they each can have
+# their own skeleton files created. `zfs-user` uses its own
+# configuration and ignores the value of `/etc/adduser.conf` for
+# `SKEL`, as well as the default in `/etc/default/useradd`.
+#
+# The zfs-user.toml configuration file must have 1 or more sections,
+# named for the parent dataset in which user datasets will be
+# created. The following options are supported in each section:
+#
+# * `already_exists_ok`. If set to true, an error due to an
+#   already-existing dataset is treated as nonfatal. Defaults to
+#   false. Useful when combined with `destroy = false` and a user is
+#   re-created.
+# * `create`. If set to true, create user datasets in this
+#   dataset during useradd. Defaults to true.
+# * `destroy`. If set to true, delete user datasets during
+#   userdel. Defaults to false. Note that this will destroy the
+#   dataset recursively, including snapshots and clones.
+# * `perms`. Specifies the permission bits on the newly-created
+#   dataset itself. Defaults to 0o755.
+# * `quota`. If set, applies a ZFS quota on the created
+#   dataset. Defaults to no quota.
+# * `skel`. If set, uses the given path as the source of skeleton
+#   files for newly created datasets. Defaults to unset.
+#
+# Note that the sections in the TOML format may need to be quoted if
+# they contain slashes.
+
+import os
+import shutil
+import subprocess
+import sys
+import tomllib
+
+# Environment variable keys
+_ACTION = "ACTION"
+_SUBJECT = "SUBJECT"
+_ZFS_USER_CONF = "ZFS_USER_CONF"
+
+_USERADD = "useradd"
+_USERDEL = "userdel"
+
+_DEFAULT_CONF = "/etc/zfs-user.toml"
+
+
+def load_config(path: str) -> dict:
+    """Loads the configuration at the given path."""
+    with open(path, "rb") as f:
+        return tomllib.load(f)
+
+
+def which_zfs():
+    """Returns a list containing the fully-qualified path to `zfs`."""
+    return [shutil.which("zfs")]
+
+
+def zfs(*args):
+    """Runs `zfs` with the given arguments."""
+    subprocess.run(which_zfs() + list(args), check=True)
+
+
+def zfs_get(dataset: str, property: str) -> str:
+    """`zfs get` the given property about the given dataset."""
+    result = subprocess.run(
+        which_zfs() + ["get", "-H", property, "-o", "value", dataset],
+        capture_output=True,
+    )
+    return result.stdout.decode("utf-8").split()[0]
+
+
+def chown_r(path: str, user=None, group=None):
+    """`chown -R`.
+
+    Like shutil.chown, but recursively walk the directory and affect
+    all files and directories contained within.
+
+    """
+    shutil.chown(path, user, group)
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            shutil.chown(d, user, group)
+        for f in files:
+            shutil.chown(os.path.join(root, f), user, group)
+
+
+def useradd(conf: dict, username: str):
+    """Create zfs datasets for given user, as per the given config."""
+    for dataset, specs in conf.items():
+        # Check if this parent dataset should contain child datasets.
+        if not specs.get("create", True):
+            continue
+
+        # Try to create the dataset
+        new_dataset = f"{dataset}/{username}"
+        exists_ok = specs.get("already_exists_ok", False)
+        try:
+            zfs("create", new_dataset)
+        except subprocess.CalledProcessError:
+            if not exists_ok:
+                raise
+
+        # Set quota, if applicable
+        quota = specs.get("quota", None)
+        if quota:
+            zfs("set", f"quota={quota}", new_dataset)
+
+        new_dataset_path = os.path.join(str(zfs_get(dataset, "mountpoint")), username)
+        # Set perms correctly
+        perms = specs.get("perms", 0o755)
+        os.chmod(new_dataset_path, perms)
+
+        # Copy the skeleton files, if set
+        skel = specs.get("skel", None)
+        if skel:
+            shutil.copytree(
+                skel,
+                new_dataset_path,
+                symlinks=True,
+                copy_function=shutil.copy,
+                dirs_exist_ok=True,
+            )
+
+        # Set ownership correctly
+        chown_r(new_dataset_path, user=username, group=username)
+
+
+def userdel(conf: dict, username: str):
+    """Destroy zfs datasets for given user, as per the given config."""
+    for dataset, specs in conf.items():
+        # Check if this parent dataset should contain child datasets.
+        if not specs.get("destroy", False):
+            continue
+
+        # Try to create the dataset
+        new_dataset = f"{dataset}/{username}"
+        try:
+            zfs("destroy", "-R", new_dataset)
+        except subprocess.CalledProcessError:
+            pass
+
+
+_SUPPORTED_ACTIONS = {_USERADD: useradd, _USERDEL: userdel}
+
+
+def main() -> int:
+    if _ACTION not in os.environ or _SUBJECT not in os.environ:
+        print("useradd environment variables missing; did you invoke this manually?")
+        return 1
+
+    if os.environ[_ACTION] not in _SUPPORTED_ACTIONS:
+        print(f"Action '{os.environ[_ACTION]}' is not supported")
+        return 1
+
+    conf = load_config(os.environ.get(_ZFS_USER_CONF, _DEFAULT_CONF))
+
+    _SUPPORTED_ACTIONS[os.environ[_ACTION]](conf, os.environ[_SUBJECT])
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

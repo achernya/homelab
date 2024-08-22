@@ -1,0 +1,19 @@
+["{{ home_dataset }}"]
+# Create new homedirs for new users when they are `useradd`'d.
+create = true
+# Delete homedirs when they are `userdel`'d. Since these are small
+# (see the quota below) and probably just contain the skeleton, they
+# can easily be re-created.
+destroy = true
+# Only allow 1GiB of quota for the user
+quota = "1G"
+# Source skeleton files from the default location
+skel = "/etc/skel"
+
+["{{ storage_dataset }}"]
+create = true
+# Don't destroy this dataset, since it will contain hard-to-recover
+# files.
+destroy = false
+# If the dataset already exists, do not raise an error.
+already_exists_ok = true

@@ -1,0 +1,30 @@
+- name: Install zfs-user
+  block:
+    - name: Copy zfs-user
+      ansible.builtin.copy:
+        src: zfs-user
+        dest: /usr/local/sbin/zfs-user
+        mode: '0755'
+    - name: Ensure /etc/shadow-maint directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+        recurse: true
+      loop:
+        - /etc/shadow-maint/useradd-post.d
+        - /etc/shadow-maint/userdel-post.d
+    - name: Add zfs-user symlinks
+      ansible.builtin.file:
+        src: /usr/local/sbin/zfs-user
+        dest: "{{ item }}/10-zfs-user"
+        state: link
+        force: true
+      loop:
+        - /etc/shadow-maint/useradd-post.d
+        - /etc/shadow-maint/userdel-post.d
+
+- name: Install zfs-user.toml
+  ansible.builtin.template:
+    src: zfs-user.toml.j2
+    dest: /etc/zfs-user.toml
