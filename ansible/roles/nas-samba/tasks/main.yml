@@ -16,6 +16,25 @@
     dest: /etc/sudoers.d/smbpasswd
     mode: '0440'
 
+- name: Get existing samba users
+  block:
+    - name: Fetch users with pdbedit
+      ansible.builtin.shell: "pdbedit -L | cut -d: -f1"
+      register: response
+      changed_when: false
+    - name: Set user facts
+      ansible.builtin.set_fact:
+        existing_users: "{{ response.stdout | split('\n') }}"
+
+- name: Set initial smbpasswd for users
+  ansible.builtin.command:
+    argv:
+      - smbpasswd
+      - -a
+      - -n
+      - "{{item}}"
+  with_items: "{{ users | map(attribute='username') | difference(existing_users) }}"
+
 - name: Install samba config
   ansible.builtin.template:
     src: smb.conf.j2

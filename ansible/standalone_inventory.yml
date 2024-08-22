@@ -5,6 +5,7 @@ all:
       ansible_user: root
       ansible_host: 192.168.1.120
       home_dataset: rpool/home
+      storage_mountpoint: /film
       storage_dataset: rpool/film
       storagehome_dataset: rpool/film/Users
     large-format:
@@ -12,6 +13,7 @@ all:
       ansible_user: root
       ansible_host: 192.168.1.118
       home_dataset: rpool/home
+      storage_mountpoint: /film
       storage_dataset: exposure/film
       storagehome_dataset: exposure/film/Users
   children:
@@ -35,4 +37,5 @@ all:
       - Books
       - Music
       - Software
+      - Uploads
       - Videos

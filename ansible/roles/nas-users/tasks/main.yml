@@ -6,7 +6,7 @@
     create_home: false
     comment: "{{ item.gecos }}"
     shell: "/bin/bash"
-  loop: "{{ users }}"
+  with_items: "{{ users }}"
 
 - name: Set ssh keys
   ansible.posix.authorized_key:
@@ -14,4 +14,4 @@
     state: present
     key: "https://github.com/{{ item.github | default(item.username) }}.keys"
     manage_dir: true
-  loop: "{{ users }}"
+  with_items: "{{ users }}"

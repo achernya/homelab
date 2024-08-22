@@ -2,6 +2,7 @@
   roles:
     - zfs-userdirs
     - zfs-snapshots
+    - nas-skel
     - nas-users
     - nas-samba
   vars:

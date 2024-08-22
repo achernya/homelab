@@ -1,0 +1,60 @@
+# Welcome to {{ansible_hostname}}
+
+## About
+
+This is a shared storage server with access over SSH, and if on the
+local network, CIFS (SMB).
+
+## Logging in over ssh
+
+Your user account does not have password. SSH authentication is only
+available using ssh keys. Your user account's `~/.ssh/authorized_keys`
+have been populated using your GitHub account. If you want to change
+these, make sure to
+
+```
+chattr +i ~/.ssh/authorized_keys
+```
+
+afterwards to prevent any automation from overwriting your changes.
+
+## Home directory
+
+Your home directory has a set of convenience symlinks, which point to
+the respective datasets on the bulk storage. They are:
+
+{% for share in shares %}
+- {{ share }}
+{% endfor %}
+
+Your home directory (i.e., where you found this file) is limited to
+1GiB and is **not** be backed up.
+
+## User directory
+
+You have an additional directory in {{storage_mountpoint}}/Users/
+which does not have a quota and is backed up.
+
+This directory is on the same storage device as the media directories.
+
+## Setting up CIFS access
+
+Your CIFS account has already been provisioned, but has an empty
+password. To set the password, run
+
+```
+sudo smbpasswd $USER
+```
+
+to set it. You can also use this command to re-set the password in the
+event that you forget it in the future.
+
+## Snapshots
+
+`sanoid` is configured to take periodic snapshots of most
+directories. You can access these snapshots by changing into
+`.zfs/snapshots` inside any ZFS dataset. By defalt, the `.zfs`
+directory is hidden will not show up in directory listings.
+
+These snapshots are also accessible through Windows' "Previous
+Versions" dialog when using CIFS.

@@ -11,7 +11,7 @@
         state: directory
         mode: '0755'
         recurse: true
-      loop:
+      with_items:
         - /etc/shadow-maint/useradd-post.d
         - /etc/shadow-maint/userdel-post.d
     - name: Add zfs-user symlinks
@@ -20,7 +20,7 @@
         dest: "{{ item }}/10-zfs-user"
         state: link
         force: true
-      loop:
+      with_items:
         - /etc/shadow-maint/useradd-post.d
         - /etc/shadow-maint/userdel-post.d
 

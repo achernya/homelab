@@ -1,0 +1,18 @@
+- name: Make convenience symlinks in /ec/skel
+  ansible.builtin.file:
+    state: link
+    src: "{{ storage_mountpoint }}/{{ item }}"
+    dest: "/etc/skel/{{ item }}"
+  with_items: "{{ shares }}"
+
+- name: Install README
+  block:
+    - name: Render README
+      ansible.builtin.template:
+        src: README.j2
+        dest: /home/README
+    - name: Symlink README to /etc/skel
+      ansible.builtin.file:
+        state: link
+        src: /home/README
+        dest: /etc/skel/README
