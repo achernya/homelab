@@ -1,0 +1,56 @@
+[rpool/ROOT/pve-1]
+use_template = os
+
+[{{home_dataset}}]
+use_template = user
+recursive = yes
+process_children_only = yes
+
+[{{storagehome_dataset}}]
+use_template = user
+recursive = yes
+process_children_only = yes
+
+{% for share in shares %}
+[{{storage_dataset}}/{{share}}]
+use_template = bulk
+
+{% endfor %}
+#############################
+# templates below this line #
+#############################
+
+# The `os` template is intended to be used for datasets that hold an
+# operating system. This keeps a few snapshots for rolling-back in the
+# case of a bad OS update or configuration change.
+[template_os]
+	frequently = 0
+	hourly = 24
+	daily = 7
+	monthly = 3
+	yearly = 0
+	autosnap = yes
+	autoprune = yes
+
+# The `bulk` template is intended for datasets that hold large amounts
+# of rarely-changing data (e.g., media). No snapshots older than daily
+# will be kept.
+[template_bulk]
+	frequently = 0
+	hourly = 24
+	daily = 7
+	monthly = 0
+	yearly = 0
+	autosnap = yes
+	autoprune = yes
+
+# The `user` template is intended for datasets that contain active
+# user work.
+[template_user]
+	frequently = 8
+	hourly = 24
+	daily = 30
+	monthly = 0
+	yearly = 0
+	autosnap = yes
+	autoprune = yes

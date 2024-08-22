@@ -1,6 +1,7 @@
 - hosts: nas
   roles:
     - zfs-userdirs
+    - zfs-snapshots
     - nas-users
     - nas-samba
   vars:
