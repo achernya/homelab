@@ -49,7 +49,9 @@
 # Note that the sections in the TOML format may need to be quoted if
 # they contain slashes.
 
+import grp
 import os
+import pwd
 import shutil
 import subprocess
 import sys
@@ -98,12 +100,12 @@ def chown_r(path: str, user=None, group=None):
     all files and directories contained within.
 
     """
-    shutil.chown(path, user, group)
+    uid_struct = pwd.getpwnam(user)
+    gid_struct = grp.getgrnam(group)
+    os.chown(path, uid_struct.pw_uid, gid_struct.gr_gid)
     for root, dirs, files in os.walk(path):
-        for d in dirs:
-            shutil.chown(d, user, group)
-        for f in files:
-            shutil.chown(os.path.join(root, f), user, group)
+        for x in dirs + files:
+            os.chown(os.path.join(root, x), uid_struct.pw_uid, gid_struct.gr_gid, follow_symlinks=False)
 
 
 def useradd(conf: dict, username: str):
