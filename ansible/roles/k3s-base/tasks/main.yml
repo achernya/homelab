@@ -1,0 +1,49 @@
+- name: Ensure /usr/local/bin exists
+  ansible.builtin.file:
+    path: /usr/local/bin
+    state: directory
+    mode: '0755'
+
+- name: Download k3s
+  ansible.builtin.get_url:
+    url: "https://github.com/k3s-io/k3s/releases/download/v1.32.5%2Bk3s1/k3s"
+    checksum: "sha256:9624ef0534b1be432b4ce8dd94dcd7241ed02451d970a4d38943baccf5c60dce"
+    dest: "/usr/local/bin/k3s"
+    mode: 0755
+
+- name: Set up k3s symlinks
+  ansible.builtin.file:
+    src: "/usr/local/bin/k3s"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+  loop:
+    - crictl
+    - ctr
+    - kubectl
+    
+- name: Ensure /var/lib/rancher/k3s/agent/images/ exists
+  ansible.builtin.file:
+    path: /var/lib/rancher/k3s/agent/images/
+    state: directory
+    mode: '0755'
+
+- name: Download k3s airgap images
+  ansible.builtin.get_url:
+    url: "https://github.com/k3s-io/k3s/releases/download/v1.32.5%2Bk3s1/k3s-airgap-images-amd64.tar.zst"
+    checksum: "sha256:ac1f278f1b006851d95cd3236e9b909264872e9f6b5ffcf90d28198c6f2e913c"
+    dest: "/var/lib/rancher/k3s/agent/images/k3s-airgap-images-amd64.tar.zst"
+
+- name: Install k3s systemd files
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
+  loop:
+    - k3s.service
+    - k3s.service.env
+
+- name: Enable and start k3s
+  ansible.builtin.systemd_service:
+    name: k3s.service
+    daemon_reload: true
+    enabled: true
+    state: started
