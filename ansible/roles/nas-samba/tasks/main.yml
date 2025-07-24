@@ -4,6 +4,7 @@
       - samba
       - samba-client
       - samba-vfs-modules
+      - avahi-daemon
 
 - name: Install sudo
   ansible.builtin.apt:
@@ -39,4 +40,4 @@
   ansible.builtin.template:
     src: smb.conf.j2
     dest: /etc/samba/smb.conf
-  notify: restart smbd
+  notify: restart samba

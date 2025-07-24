@@ -6,6 +6,7 @@
 
 [global]
    workgroup = VOIDLOAF
+   client min protocol = SMB3
 
 #### Debugging/Accounting ####
 
@@ -35,10 +36,25 @@
 # to anonymous connections
    map to guest = bad user
 
+# Global vfs objects mappings.
+   vfs objects = catia fruit streams_xattr
+   # This is probably not needed with vfs_fruit, but leaving here to uncomment later.
+   # catia:mappings = 0x22:0xa8,0x2a:0xa4,0x2f:0xf8,0x3a:0xf7,0x3c:0xab,0x3e:0xbb,0x3f:0xbf,0x5c:0xff,0x7c:0xa6
+# Enable macOS improved compatibility.
+   fruit: aapl = yes
+   # This will only work if avahi-daemon is installed and running.
+   fruit: model = RackMac
+   fruit: encoding = native
+   # Allow clients to access ._AppleDouble files. The alternative is it will break other things.
+   fruit: veto_appledouble = no
+   # But delete both "intentionally left blank" and empty AppleDouble files, since they're unnecessary.
+   fruit: wipe_intentionally_left_blank_rfork = yes
+   fruit: delete_empty_adfiles = yes
+   # Enable cross-protocol locking with netatalk in case an AFP server is set up.
+   fruit: metadata = netatalk
+   fruit: locking = netatalk
 # Enable accessing ZFS snapshots as "Previous Versions". Individual
-# shares need to enable this with "vfs objects = shadow_copy2 catia".
-   vfs objects = catia
-   catia:mappings = 0x22:0xa8,0x2a:0xa4,0x2f:0xf8,0x3a:0xf7,0x3c:0xab,0x3e:0xbb,0x3f:0xbf,0x5c:0xff,0x7c:0xa6
+# shares need to enable this with "vfs objects = shadow_copy2 [...]".
    shadow: snapdir = .zfs/snapshot
    shadow: sort = desc
    shadow: format = _%Y-%m-%d_%H:%M:%S
@@ -59,7 +75,7 @@
    directory mask = 0755
    valid users = %S
 
-   vfs objects = shadow_copy2 catia
+   vfs objects = shadow_copy2 catia fruit streams_xattr
 
 
 {% for share in shares %}
@@ -68,7 +84,7 @@
    read only = yes
    path = /film/{{share}}
    guest ok = yes
-   vfs objects = shadow_copy2 catia
+   vfs objects = shadow_copy2 catia fruit streams_xattr
 
 {% endfor %}
 [printers]

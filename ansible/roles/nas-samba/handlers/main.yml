@@ -1,2 +1,6 @@
+- name: restart nmbd
+  service: name=nmbd state=restarted
+  listen: "restart samba"
 - name: restart smbd
   service: name=smbd state=restarted
+  listen: "restart samba"
