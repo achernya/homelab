@@ -6,8 +6,8 @@
 
 - name: Download k3s
   ansible.builtin.get_url:
-    url: "https://github.com/k3s-io/k3s/releases/download/v1.32.5%2Bk3s1/k3s"
-    checksum: "sha256:9624ef0534b1be432b4ce8dd94dcd7241ed02451d970a4d38943baccf5c60dce"
+    url: "https://github.com/k3s-io/k3s/releases/download/v1.33.4%2Bk3s1/k3s"
+    checksum: "sha256:10da34c350ab8a02e4513a6021046db9e9afecc31bae77419bc6444cbd7b1400"
     dest: "/usr/local/bin/k3s"
     mode: 0755
 
@@ -29,8 +29,8 @@
 
 - name: Download k3s airgap images
   ansible.builtin.get_url:
-    url: "https://github.com/k3s-io/k3s/releases/download/v1.32.5%2Bk3s1/k3s-airgap-images-amd64.tar.zst"
-    checksum: "sha256:ac1f278f1b006851d95cd3236e9b909264872e9f6b5ffcf90d28198c6f2e913c"
+    url: "https://github.com/k3s-io/k3s/releases/download/v1.33.4%2Bk3s1/k3s-airgap-images-amd64.tar.zst"
+    checksum: "sha256:1a3738a77c4a3fef4a85c16d7f2eadcd337605f9279fcddbc3eb4f982fbd2238"
     dest: "/var/lib/rancher/k3s/agent/images/k3s-airgap-images-amd64.tar.zst"
 
 - name: Install k3s systemd files
