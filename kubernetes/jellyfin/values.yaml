@@ -1,0 +1,43 @@
+jellyfin:
+  ingress:
+    enabled: true
+    hosts: 
+      - host: ''
+        paths:
+          - path: /
+            pathType: Prefix
+  volumes:
+    - name: movies
+      hostPath:
+        path: /film/Videos/Movies
+        type: Directory
+    - name: tv
+      hostPath:
+        path: /film/Videos/TV
+        type: Directory
+    - name: music
+      hostPath:
+        path: /film/Music
+        type: Directory
+  volumeMounts:
+    - name: movies
+      mountPath: /media/Movies
+      readOnly: true
+    - name: tv
+      mountPath: /media/TV
+      readOnly: true
+    - name: music
+      mountPath: /media/Music
+      readOnly: true
+  persistence:
+    config:
+      storageClass: local-path
+    media:
+      # Media set up as extra volumes, above.
+      enabled: false
+  metrics:
+    # Probably need to configure this too
+    enabled: false
+  resources:
+    limits:
+      squat.ai/gpu-render: 1
