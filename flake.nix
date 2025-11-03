@@ -49,6 +49,7 @@
       {
         nixidyEnvs = nixidy.lib.mkEnvs {
           inherit pkgs;
+
           charts = nixhelm.chartsDerivations.${system};
 
           envs = {

@@ -2,13 +2,30 @@
   lib,
   config,
   charts,
+  pkgs,
   ...
 }:
 let
   cfg = config.services.argocd;
 
   namespace = "argocd";
-  values = lib.attrsets.recursiveUpdate { } cfg.values;
+
+  origValues = lib.helm.getChartValues charts.argoproj.argo-cd;
+  exclusions = origValues.configs.cm."resource.exclusions";
+  values = lib.attrsets.recursiveUpdate {
+    configs = {
+      cm."application.instanceLabelKey" = "argocd.argoproj.io/instance";
+      cm."resource.exclusions" = exclusions + ''
+        ### Ignore Cilium-generated values
+        - apiGroups:
+            - cilium.io
+          kinds:
+            - CiliumIdentity
+          clusters:
+            - "*"
+      '';
+    };
+  } cfg.values;
 in
 {
   options.services.argocd = with lib; {
