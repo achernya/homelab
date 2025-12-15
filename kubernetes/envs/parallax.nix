@@ -4,7 +4,11 @@
   nixidy.target.rootPath = "kubernetes/generated/parallax";
   nixidy.chartsDir = ../charts;
 
+  services.generic-device-plugin.enable = false;
+
   imports = [
     ../modules/argocd
+    ../modules/generic-device-plugin
   ];
+
 }
