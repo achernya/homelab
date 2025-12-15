@@ -14,11 +14,6 @@
       url = "github:arnarg/nixidy";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    nixhelm = {
-      url = "github:farcaller/nixhelm";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
   outputs =
     {
@@ -27,7 +22,6 @@
       flake-utils,
       treefmt-nix,
       nixidy,
-      nixhelm,
       systems,
     }:
     # From nixfmt-tree instructions. Not really compatible with eachDefaultSystem.
@@ -50,7 +44,7 @@
         nixidyEnvs = nixidy.lib.mkEnvs {
           inherit pkgs;
 
-          charts = nixhelm.chartsDerivations.${system};
+          charts = { };
 
           envs = {
             parallax.modules = [ ./kubernetes/envs/parallax.nix ];
