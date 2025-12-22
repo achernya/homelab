@@ -9,6 +9,7 @@
   imports = [
     ../modules/argocd
     ../modules/generic-device-plugin
+    ../modules/jellyfin
   ];
 
 }
