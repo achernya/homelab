@@ -48,6 +48,8 @@
 
           envs = {
             parallax.modules = [ ./kubernetes/envs/parallax.nix ];
+            large-format.modules = [ ./kubernetes/envs/large-format.nix ];
+            medium-format.modules = [ ./kubernetes/envs/medium-format.nix ];
           };
 
         };
