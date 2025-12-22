@@ -89,7 +89,7 @@ in
     applications.jellyfin = {
       inherit namespace;
 
-      # createNamespace = true;
+      createNamespace = true;
 
       helm.releases.jellyfin = {
         inherit values;
