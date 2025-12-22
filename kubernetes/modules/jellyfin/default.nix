@@ -39,7 +39,7 @@ let
       {
         name = "music";
         hostPath = {
-          path = "/film/Videos/Music";
+          path = "/film/Music";
           type = "Directory";
         };
       }

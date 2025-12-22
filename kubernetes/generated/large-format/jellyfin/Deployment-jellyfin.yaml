@@ -76,6 +76,6 @@ spec:
             type: Directory
           name: tv
         - hostPath:
-            path: /film/Videos/Music
+            path: /film/Music
             type: Directory
           name: music
