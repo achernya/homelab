@@ -64,6 +64,9 @@ let
     persistence.config = {
       storageClass = "local-path";
     };
+    persistence.media = {
+      enabled = false;
+    };
     metrics = {
       enabled = false;
     };
