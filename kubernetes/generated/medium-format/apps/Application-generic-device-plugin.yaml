@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: generic-device-plugin
+  namespace: argocd
+spec:
+  destination:
+    namespace: generic-device-plugin
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: ./kubernetes/generated/medium-format/generic-device-plugin
+    repoURL: https://github.com/achernya/homelab.git
+    targetRevision: nixidy
+  syncPolicy: {}

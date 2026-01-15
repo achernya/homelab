@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: jellyfin
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/version: 10.10.6
+    helm.sh/chart: jellyfin-2.3.0
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: jellyfin
+      app.kubernetes.io/name: jellyfin
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: jellyfin
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: jellyfin
+        app.kubernetes.io/version: 10.10.6
+        helm.sh/chart: jellyfin-2.3.0
+    spec:
+      containers:
+        - image: docker.io/jellyfin/jellyfin:10.10.6
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            initialDelaySeconds: 10
+            tcpSocket:
+              port: http
+          name: jellyfin
+          ports:
+            - containerPort: 8096
+              name: http
+              protocol: TCP
+          readinessProbe:
+            initialDelaySeconds: 10
+            tcpSocket:
+              port: http
+          resources:
+            limits:
+              squat.ai/gpu-render: "1"
+          securityContext: {}
+          volumeMounts:
+            - mountPath: /config
+              name: config
+            - mountPath: /media
+              name: media
+            - mountPath: /media/Movies
+              name: movies
+              readOnly: true
+            - mountPath: /media/TV
+              name: tv
+              readOnly: true
+            - mountPath: /media/Music
+              name: music
+              readOnly: true
+      securityContext: {}
+      serviceAccountName: jellyfin
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: jellyfin-config
+        - emptyDir: {}
+          name: media
+        - hostPath:
+            path: /film/Videos/Movies
+            type: Directory
+          name: movies
+        - hostPath:
+            path: /film/Videos/TV
+            type: Directory
+          name: tv
+        - hostPath:
+            path: /film/Music
+            type: Directory
+          name: music

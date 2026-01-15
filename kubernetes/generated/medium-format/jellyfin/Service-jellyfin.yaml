@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: jellyfin
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: jellyfin
+    app.kubernetes.io/version: 10.10.6
+    helm.sh/chart: jellyfin-2.3.0
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  ports:
+    - name: http
+      port: 8096
+      protocol: TCP
+      targetPort: http
+  selector:
+    app.kubernetes.io/instance: jellyfin
+    app.kubernetes.io/name: jellyfin
+  type: ClusterIP
